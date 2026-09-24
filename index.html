@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Aさんの行方</title>
+<style>
+/* ==========================================================
+   フォント同梱
+   端末によって明朝体が無かったりして見た目が揺れないよう、
+   本文で使う2書体は fonts/ に同梱し、相対パスで読み込む(CDN不使用)。
+   同梱フォントは可変フォント(wght 100〜900)なので、ファイルは1つで済む。
+   実際に使っている文字だけに絞ったサブセットなので、CONFIGの文言を
+   大幅に書き換えて新しい漢字を使う場合は、フォントの再生成を検討すること
+   (無くても、その文字だけシステムフォントに自動でフォールバックするので
+   表示が崩れることはない)。
+   メイリオは商用フォントのため同梱していない(システム参照のまま)。
+   ========================================================== */
+@font-face{
+  font-family:"Noto Sans JP";
+  font-style:normal;
+  font-weight:100 900;
+  font-display:swap;
+  src:url("fonts/NotoSansJP-Variable.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Noto Serif JP";
+  font-style:normal;
+  font-weight:100 900;
+  font-display:swap;
+  src:url("fonts/NotoSerifJP-Variable.woff2") format("woff2");
+}
+
+/* ==========================================================
+   デザイントークン
+   昼の屋外でも読めるよう、全画面を紙基調(明るい地+濃い文字)に統一する。
+   新しい色・フォントを増やしたいときはここに追記する
+   ========================================================== */
+:root{
+  --ink:#171512;          /* 上部バー・チャットの吹き出し(自分側)などアクセントで使う濃色 */
+  --ink-2:#26221d;
+  --paper:#faf6ec;        /* 謎カードの紙色 */
+  --paper-2:#f1ead9;      /* 紙の濃淡違い(入力欄など) */
+  --indigo:#2c3a63;       /* アクセント1(ボタン等) */
+  --vermilion:#a83232;    /* アクセント2(警告・不正解・朱) */
+  --line:#c9bfa8;         /* 紙の罫線色 */
+  --text-dark:#232019;
+  --text-light:#f3ede0;
+  --mincho:"Noto Serif JP","Hiragino Mincho ProN","YuMincho","MS PMincho",serif;
+  --gothic:"Noto Sans JP",-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --meiryo:Meiryo,"MS PGothic",sans-serif; /* 商用フォントのため同梱しない。「並べ替え」の合図として使う特別なフォント */
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+  --bar-h:56px;
+  --topbar-h:40px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--paper);
+  color:var(--text-dark);
+  font-family:var(--gothic);
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+  min-height:100vh;
+  min-height:100dvh;
+}
+button{font-family:inherit;}
+input{font-family:inherit;}
+.hidden{display:none !important;}
+
+/* ---------- 画面共通レイアウト ---------- */
+#app{
+  padding-top:calc(var(--topbar-h) + var(--safe-t));
+  padding-bottom:calc(var(--bar-h) + var(--safe-b) + 12px);
+  padding-left:calc(var(--safe-l) + 16px);
+  padding-right:calc(var(--safe-r) + 16px);
+  min-height:100vh;
+  min-height:100dvh;
+}
+/* ---------- 上部バー(現在の目的地) ---------- */
+#topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:calc(var(--topbar-h) + var(--safe-t));
+  padding-top:var(--safe-t);
+  padding-left:calc(var(--safe-l) + 14px);
+  padding-right:calc(var(--safe-r) + 14px);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(23,21,18,0.92);
+  color:var(--text-light);
+  font-size:12px;
+  z-index:30;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+#topbar .dest-label{opacity:0.75;flex-shrink:0;}
+#topbar .dest-value{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ---------- タイトル画面 ---------- */
+.title-wrap{min-height:calc(100vh - var(--topbar-h) - var(--bar-h));min-height:calc(100dvh - var(--topbar-h) - var(--bar-h));display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:22px;padding:24px 0;}
+.title-wrap h1{font-family:var(--mincho);font-size:30px;letter-spacing:0.08em;margin:0;}
+.title-wrap .sub{font-size:13px;opacity:0.75;letter-spacing:0.05em;}
+.title-wrap .lead{font-size:14px;line-height:1.9;white-space:pre-line;max-width:320px;opacity:0.9;}
+
+/* ---------- 物語画面(日記の場面などで使う地の文) ---------- */
+.story-wrap{padding:28px 0 8px;}
+.story-wrap h2{font-family:var(--mincho);font-size:18px;letter-spacing:0.06em;margin:0 0 20px;text-align:center;}
+.story-body p{font-family:var(--mincho);font-size:16px;line-height:2.1;white-space:pre-line;margin:0 0 22px;}
+.story-body p.font-meiryo{font-family:var(--meiryo);}
+
+/* ---------- 依頼人とのトーク(チャットUI) ---------- */
+.chat-wrap{padding:24px 0 8px;}
+.chat-wrap h2{font-family:var(--mincho);font-size:16px;letter-spacing:0.06em;margin:0 0 18px;text-align:center;color:#6b6250;}
+.chat-messages{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.chat-system-note{text-align:center;font-size:12px;color:#8b8270;margin:6px 0;}
+.chat-row{display:flex;align-items:flex-end;gap:8px;}
+.chat-row-me{justify-content:flex-end;}
+.chat-avatar{
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  background:var(--paper-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--indigo);font-weight:700;
+}
+.chat-bubble{
+  max-width:74%;padding:10px 13px;border-radius:16px;
+  font-size:14px;line-height:1.7;white-space:pre-line;word-break:break-word;
+}
+.chat-bubble.font-meiryo{font-family:var(--meiryo);}
+.chat-bubble-client{background:var(--paper-2);border:1px solid var(--line);color:var(--text-dark);border-bottom-left-radius:4px;}
+.chat-bubble-me{background:var(--indigo);color:#fff;border-bottom-right-radius:4px;}
+.chat-messages-compact .chat-bubble{font-size:13px;padding:8px 12px;}
+.chat-messages-compact .chat-avatar{width:24px;height:24px;font-size:10px;}
+
+/* ---------- 謎(パズル)カード ---------- */
+.puzzle-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:20px 18px 22px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.puzzle-num{font-size:12px;letter-spacing:0.1em;color:var(--indigo);font-weight:700;margin-bottom:4px;}
+.puzzle-title{font-size:19px;font-weight:700;margin:0 0 14px;}
+.puzzle-optional-badge{display:inline-block;font-size:11px;background:var(--paper-2);border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin-left:8px;color:#6b6250;font-weight:400;vertical-align:middle;}
+.puzzle-image-thumb{width:100%;border-radius:3px;border:1px solid var(--line);display:block;margin-bottom:16px;cursor:zoom-in;background:#eee;}
+.puzzle-image-caption{font-size:11px;color:#7a7261;text-align:center;margin:-10px 0 16px;}
+
+/* ---------- 謎1: PCのロック画面ふうの見た目 ---------- */
+.lock-screen{
+  background:linear-gradient(160deg, var(--ink) 0%, #33302a 100%);
+  color:#f3ede0;border-radius:10px;
+  padding:28px 16px 24px;margin-bottom:18px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.lock-time{font-size:38px;font-weight:700;letter-spacing:0.04em;}
+.lock-date{font-size:12px;opacity:0.75;margin-bottom:10px;}
+.lock-icon{opacity:0.9;margin-bottom:2px;}
+.lock-label{font-size:12px;opacity:0.85;margin-bottom:10px;}
+.lock-dots{display:flex;gap:12px;}
+.lock-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(243,237,224,0.6);background:transparent;}
+.lock-dot.filled{background:#f3ede0;}
+.puzzle-prompt{font-size:15px;line-height:1.9;white-space:pre-line;margin:0 0 18px;font-family:var(--gothic);}
+.puzzle-prompt.font-meiryo{font-family:var(--meiryo);}
+
+.answer-row{display:flex;gap:8px;margin-bottom:6px;}
+.answer-row input{
+  flex:1;min-width:0;
+  font-size:18px;padding:12px 14px;
+  border:1px solid var(--line);border-radius:3px;
+  background:#fff;color:var(--text-dark);
+  min-height:44px;
+}
+.answer-row input:focus{outline:2px solid var(--indigo);outline-offset:1px;}
+.btn{
+  appearance:none;border:none;border-radius:3px;
+  min-height:44px;padding:0 18px;
+  font-size:15px;font-weight:700;
+  background:var(--indigo);color:#fff;
+  cursor:pointer;
+}
+.btn:active{opacity:0.85;}
+.btn-secondary{background:transparent;color:var(--indigo);border:1px solid var(--indigo);}
+.btn-block{width:100%;}
+.btn-ghost{background:transparent;color:inherit;border:1px solid var(--line);}
+
+.feedback{font-size:13px;margin:8px 0 4px;min-height:18px;}
+.feedback.ng{color:var(--vermilion);font-weight:700;}
+.feedback.ok{color:#2c6b3a;font-weight:700;}
+
+.rescue-box{
+  margin-top:14px;padding:12px 14px;border-radius:3px;
+  background:var(--paper-2);border:1px dashed var(--line);
+  font-size:13px;line-height:1.7;
+}
+.rescue-box button{margin-top:8px;}
+
+.skip-row{margin-top:16px;text-align:center;}
+.skip-row button{background:none;border:none;color:#7a7261;font-size:13px;text-decoration:underline;padding:8px;min-height:44px;}
+
+/* ---------- マップ謎など、順不同で解ける謎のハブ画面 ---------- */
+.hub-wrap{padding:22px 0;}
+.hub-wrap h2{font-size:19px;text-align:center;margin:0 0 10px;}
+.hub-intro{font-size:14px;line-height:1.8;text-align:center;margin:0 0 20px;color:#4a4436;}
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.hub-card{
+  background:var(--paper);border:1px solid var(--line);border-radius:4px;
+  padding:18px 10px;min-height:84px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;
+}
+.hub-card.solved{background:var(--paper-2);border-color:var(--indigo);}
+.hub-card .hub-num{font-size:13px;color:var(--indigo);}
+.hub-card .hub-status{font-size:13px;color:#7a7261;}
+.hub-card.solved .hub-status{color:var(--indigo);}
+.hub-progress{text-align:center;font-size:13px;color:#6b6250;margin-bottom:18px;}
+
+/* ---------- ヒント ---------- */
+.hint-section{margin-top:20px;border-top:1px dashed var(--line);padding-top:14px;}
+.hint-section h3{font-size:13px;margin:0 0 10px;color:#6b6250;}
+.hint-item{background:var(--paper-2);border:1px solid var(--line);border-radius:3px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.7;white-space:pre-line;}
+.hint-item.answer{border-color:var(--vermilion);}
+.hint-item.answer .hint-badge{color:var(--vermilion);}
+.hint-badge{font-size:11px;font-weight:700;display:block;margin-bottom:4px;color:var(--indigo);}
+
+/* ---------- 移動シーン ---------- */
+.move-wrap{padding:20px 0;}
+.move-wrap .move-icon{font-size:34px;text-align:center;margin-bottom:10px;}
+.move-wrap h2{font-size:19px;text-align:center;margin:0 0 16px;}
+.move-wrap p{font-size:15px;line-height:1.9;white-space:pre-line;margin:0 0 18px;}
+.move-dest{
+  background:var(--indigo);color:#fff;border-radius:4px;
+  padding:16px;text-align:center;margin-bottom:20px;
+}
+.move-dest .l{font-size:11px;opacity:0.8;}
+.move-dest .v{font-size:20px;font-weight:700;margin-top:4px;}
+
+/* ---------- 合言葉(分岐)シーン ---------- */
+.code-wrap .puzzle-card{margin-bottom:14px;}
+.code-pass{text-align:center;margin-top:10px;}
+.code-pass button{background:none;border:none;color:#7a7261;font-size:13px;text-decoration:underline;padding:10px;min-height:44px;}
+
+/* ---------- 日記の場面(縦書き) ---------- */
+.diary-wrap h2{text-align:center;}
+.diary-box{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  width:100%;max-width:100%;box-sizing:border-box;
+  height:min(62vh, 420px);max-height:62vh;
+  overflow-x:auto;overflow-y:hidden;
+  padding:18px 14px;margin:18px 0;
+  border:1px solid var(--line);border-radius:4px;
+  background-color:var(--paper-2);
+  background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line) 31px, var(--line) 32px);
+}
+.diary-box p{font-family:var(--mincho);font-size:17px;line-height:1.9;letter-spacing:0.04em;margin:0 0 0 30px;white-space:pre-line;}
+.diary-box p:first-child{margin-right:2px;}
+.diary-box.diary-box-horizontal{
+  writing-mode:horizontal-tb;height:auto;max-height:none;
+  overflow-x:hidden;overflow-y:visible;background-image:none;
+}
+.diary-box.diary-box-horizontal p{margin:0 0 16px;}
+.diary-box.diary-box-horizontal p:first-child{margin-right:0;}
+.diary-toggle-row{text-align:center;margin:2px 0 18px;}
+.diary-toggle-row .btn-secondary{padding:0 18px;}
+
+/* ---------- LION謎の回転ブラケット ---------- */
+.bracket-box{
+  position:relative;display:inline-block;
+  padding:10px 22px;margin:4px 2px;
+  font-family:var(--gothic);font-weight:700;font-size:26px;letter-spacing:0.12em;
+}
+.bracket-box::before,.bracket-box::after{content:"";position:absolute;width:14px;height:14px;border:3px solid var(--indigo);}
+.bracket-box::before{top:0;left:0;border-right:none;border-bottom:none;}
+.bracket-box::after{bottom:0;right:0;border-left:none;border-top:none;}
+.bracket-box.rotated{transform:rotate(180deg);}
+.lion-reveal-wrap{text-align:center;padding:18px 0 6px;}
+.lion-reveal-wrap .lead-text{font-family:var(--mincho);font-size:16px;margin-bottom:6px;}
+
+/* ---------- エンディング ---------- */
+.ending-wrap{padding:30px 0;text-align:center;}
+.ending-badge{display:inline-block;font-size:12px;letter-spacing:0.15em;padding:4px 14px;border-radius:99px;border:1px solid var(--indigo);color:var(--indigo);margin-bottom:18px;}
+.ending-wrap h2{font-family:var(--mincho);font-size:24px;margin:0 0 20px;}
+.ending-wrap .body{font-family:var(--mincho);font-size:15px;line-height:2.1;white-space:pre-line;margin-bottom:26px;text-align:left;}
+.ending-stats{font-size:13px;opacity:0.85;margin-bottom:22px;line-height:1.9;}
+.share-area textarea{width:100%;min-height:110px;font-size:12px;padding:10px;border-radius:3px;border:1px solid var(--line);margin-top:10px;background:var(--paper);color:var(--text-dark);}
+
+/* ---------- 下部バー ---------- */
+#bottombar{
+  position:fixed;left:0;right:0;bottom:0;
+  height:calc(var(--bar-h) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  padding-left:calc(var(--safe-l) + 8px);
+  padding-right:calc(var(--safe-r) + 8px);
+  display:flex;gap:6px;align-items:center;
+  background:rgba(255,255,255,0.97);
+  border-top:1px solid var(--line);
+  z-index:30;
+}
+#bottombar button{
+  flex:1;height:44px;min-width:0;border-radius:3px;border:1px solid var(--line);
+  background:#fff;font-size:12px;font-weight:700;color:var(--text-dark);
+  padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#bottombar button.staff-btn{flex:0 0 auto;padding:0 12px;color:var(--vermilion);border-color:var(--vermilion);}
+
+/* ---------- 手がかり一覧(ドロワー) ---------- */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:40;}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;max-height:78vh;
+  background:var(--paper);border-radius:14px 14px 0 0;
+  z-index:41;display:flex;flex-direction:column;
+  padding-bottom:calc(var(--safe-b) + 10px);
+}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;border-bottom:1px solid var(--line);}
+.sheet-header h3{margin:0;font-size:15px;}
+.sheet-header button{background:none;border:none;font-size:22px;line-height:1;padding:6px 10px;min-height:44px;min-width:44px;}
+.sheet-body{overflow-y:auto;padding:12px 16px 4px;}
+.clue-item{background:var(--paper-2);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:10px;}
+.clue-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.clue-item .clue-from{font-size:11px;color:#7a7261;}
+.clue-item .clue-label{font-weight:700;font-size:14px;margin-bottom:4px;}
+.clue-item .clue-detail{font-size:13px;line-height:1.7;white-space:pre-line;}
+.clue-item img{width:100%;border-radius:3px;margin-top:8px;cursor:zoom-in;}
+.clue-kind-badge{flex-shrink:0;font-family:monospace;font-size:10px;letter-spacing:0.1em;padding:2px 7px;border-radius:99px;border:1px solid var(--indigo);color:var(--indigo);background:transparent;}
+.clue-kind-photo,.clue-kind-diary{border-color:var(--vermilion);color:var(--vermilion);}
+.empty-note{font-size:13px;color:#7a7261;text-align:center;padding:30px 0;}
+.story-log-item{border-bottom:1px dashed var(--line);padding-bottom:16px;margin-bottom:16px;}
+.story-log-item:last-child{border-bottom:none;}
+.story-log-heading{font-family:var(--mincho);font-weight:700;font-size:14px;letter-spacing:0.05em;color:var(--indigo);margin-bottom:8px;}
+.story-log-body p{font-family:var(--mincho);font-size:14px;line-height:1.9;white-space:pre-line;margin:0 0 12px;}
+.story-log-body p:last-child{margin-bottom:0;}
+.story-log-body p.font-meiryo{font-family:var(--meiryo);}
+
+/* ---------- ライトボックス(拡大表示・ピンチズーム) ---------- */
+#lightbox{position:fixed;inset:0;background:#000;z-index:60;overflow:hidden;touch-action:none;}
+#lightbox .lb-stage{position:relative;transform-origin:0 0;will-change:transform;--zoom-scale:1;}
+#lightbox .lb-stage img{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;}
+#lightbox .lb-close{position:absolute;top:calc(var(--safe-t) + 10px);right:calc(var(--safe-r) + 10px);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:20px;z-index:61;}
+#lightbox .lb-hint{position:absolute;bottom:calc(var(--safe-b) + 44px);left:0;right:0;text-align:center;color:rgba(255,255,255,0.7);font-size:12px;padding:0 12px;}
+#lightbox .lb-zoom-controls{position:absolute;right:calc(var(--safe-r) + 10px);bottom:calc(var(--safe-b) + 70px);display:flex;flex-direction:column;gap:8px;z-index:61;}
+#lightbox .lb-zoom{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:22px;line-height:1;}
+#lightbox .lb-zoom:active{background:rgba(255,255,255,0.3);}
+#lightbox .lb-trail-toggle{position:absolute;top:calc(var(--safe-t) + 10px);left:calc(var(--safe-l) + 10px);height:36px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:12px;font-weight:700;z-index:61;}
+#lightbox .lb-markers{position:absolute;inset:0;pointer-events:none;}
+#lightbox .lb-markers.hidden{display:none;}
+#lightbox .lb-marker{position:absolute;box-sizing:border-box;border:calc(2px / var(--zoom-scale,1)) solid var(--vermilion);}
+#lightbox .lb-marker-badge{
+  position:absolute;top:0;left:0;
+  background:var(--vermilion);color:#fff;font-weight:700;
+  font-size:calc(11px / var(--zoom-scale,1));
+  padding:calc(1px / var(--zoom-scale,1)) calc(4px / var(--zoom-scale,1));
+  line-height:1.4;
+}
+
+/* ---------- スタッフモード ---------- */
+#staffpanel{position:fixed;inset:0;background:var(--paper);z-index:70;overflow-y:auto;padding:calc(var(--safe-t) + 16px) 16px calc(var(--safe-b) + 30px);}
+#staffpanel h2{font-size:18px;margin:0 0 4px;color:var(--vermilion);}
+#staffpanel .note{font-size:12px;color:#7a7261;margin-bottom:18px;}
+#staffpanel section{margin-bottom:22px;}
+#staffpanel h3{font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:10px;}
+#staffpanel table{width:100%;border-collapse:collapse;font-size:12px;}
+#staffpanel td,#staffpanel th{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left;vertical-align:top;word-break:break-all;}
+#staffpanel select,#staffpanel button{min-height:40px;font-size:13px;}
+#staffpanel pre{font-size:11px;background:#fff;border:1px solid var(--line);padding:10px;border-radius:3px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;}
+.staff-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <span class="dest-label">目的地:</span>
+  <span class="dest-value" id="dest-value">—</span>
+</div>
+
+<div id="app"></div>
+
+<div id="bottombar">
+  <button id="btn-clue" type="button">手がかり</button>
+  <button id="btn-map" type="button" class="hidden">地図</button>
+  <button id="btn-story" type="button" class="hidden">物語</button>
+  <button id="btn-hint" type="button" class="hidden">ヒント</button>
+  <button id="btn-staff" type="button" class="staff-btn hidden">STAFF</button>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+ * CONFIG — シナリオの全データ
+ * ------------------------------------------------------------
+ * この下のエンジン部分(描画・答え合わせ・進捗保存)とは分離してある。
+ * 新しい演出を足す場合も、文言・答え・画像パスは必ずここに書くこと。
+ *
+ * 【重要】本ファイルの謎の問題文・答え・画像パスはすべて仮の値です。
+ *         (Aさんの行方流れ.pptx のシーン構成をもとにした「箱」だけを
+ *          用意した状態で、謎の中身は未確定のため勝手に確定させていません)
+ *         物語文(story)も同様に「案」であり、運営での確定前提のドラフトです。
+ *         差し替えるときは 【要確定】 の目印がある箇所を編集してください。
+ * ============================================================ */
+// マップ画像(謎2〜5・LION謎・下部バーの「地図」ボタンで共通使用する1枚)
+const MAP_IMAGE = "images/map.webp";
+
+// images/map.webp(1024×643)のマス目(6列×3段、マス番号1〜18)の境界を、
+// 画像に対する比率(0〜1)で持つ。実画像を解析して測定した値(目視の概算ではない)。
+// 画像を差し替えた場合はズレる可能性があるため、差し替え時は必ず再測定すること。
+const MAP_GRID = {
+  cols: [0, 0.185546875, 0.341796875, 0.5, 0.658203125, 0.814453125, 1],
+  rows: [0, 0.321929, 0.676516, 1],
+};
+function gridCellRect(n) {
+  // マス番号(1〜18) → { x, y, w, h } (すべて0〜1の比率)
+  const row = Math.floor((n - 1) / 6);
+  const col = (n - 1) % 6;
+  const x0 = MAP_GRID.cols[col], x1 = MAP_GRID.cols[col + 1];
+  const y0 = MAP_GRID.rows[row], y1 = MAP_GRID.rows[row + 1];
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+
+// 各シーンが地図上のどのマスに対応するかの対応表。
+// 【要記入】設置場所が未確定のため、勝手に埋めていません。場所が決まり次第、
+// 該当するマス番号(1〜18)に書き換えてください(nullのままなら軌跡には出ません)。
+const SCENE_GRID_CELL = {
+  puzzle_poster: null, // かるたサークルのポスター前
+  puzzle_koban: null, // 特設交番
+};
+// LION謎の分岐先だけは、地図の描き込み(14=ライオン, 17=NO17)から読み取れるため確定済み。
+// 【要確定】この読み取りが実際の設置場所と合っているか、運営で必ず確認すること(README参照)。
+const BRANCH_GRID_CELL = { LIONCODE: 14, NO17CODE: 17 };
+
+const CONFIG = {
+  gameTitle: "Aさんの行方",
+  mapImage: MAP_IMAGE, // 下部バーの「地図」ボタンが開く画像
+
+  // ---- 現地の合言葉(本番投入前に必ず差し替えること。README参照) ----
+  branchCodes: {
+    NO17CODE: { match: "NO17CODE", truth: true },   // 正しい場所(NO17)の合言葉
+    LIONCODE: { match: "LIONCODE", truth: false },  // 空振りの場所(ライオン)の合言葉
+  },
+
+  scenes: [
+    // ============================================================
+    // タイトル
+    // ============================================================
+    {
+      id: "title",
+      type: "title",
+      heading: "Aさんの行方",
+      sub: "三重大学学園祭 周回型リアル脱出ゲーム",
+      lead: "このサイトはスマートフォン専用です。\n謎を解きながらキャンパス内を実際に歩いて周ります。\n画面を閉じても、続きから再開できます。",
+      buttonLabel: "はじめる",
+      next: "story_open",
+    },
+
+    // ============================================================
+    // プロローグ 〜 謎1: パソコンのパスワード
+    // ============================================================
+    {
+      id: "story_open",
+      type: "chat",
+      heading: "依頼人とのトーク【案】",
+      messages: [
+        { from: "system", text: "依頼人とのトークが始まりました" },
+        { from: "client", text: "はじめまして。ご相談したいことがあります。" },
+        { from: "client", text: "知人のAさんと、しばらく連絡が取れていません。" },
+        { from: "client", text: "Aさんが使っていたノートパソコンを預かっているので、お送りします。中に手がかりがあるかもしれません。" },
+        { from: "system", text: "依頼人からノートパソコンが届いた" },
+        { from: "client", text: "ただ……パスワードがかかっていて、わたしには開けませんでした。" },
+        { from: "me", text: "わかりました。中を確認してみます。" },
+      ],
+      destination: null,
+      next: "puzzle_pc",
+    },
+    {
+      id: "puzzle_pc",
+      type: "puzzle",
+      number: 1,
+      heading: "パソコンのパスワード",
+      optional: false,
+      lockScreen: true, // ロック画面ふうの見た目にする
+      image: "images/パソコン謎.webp",
+      imageAlt: "パソコンのパスワード謎の画像",
+      prompt: "画像の法則を見つけて、4桁の数字を入力してください。",
+      answers: ["3433"],
+      inputMode: "numeric",
+      maxLength: 4,
+      hints: [
+        "図形の名前が「何文字」かに注目してみよう。",
+        "しかく・さんかく・ハート・クラブ、それぞれの読み方をひらがなで数えてみよう。",
+        "答え：3433",
+      ],
+      reward: [
+        { label: "依頼人と連絡が取れる", detail: "パソコンのロックが解除され、依頼人とやり取りできるようになった。", kind: "person" },
+        { label: "学内マップを入手", detail: "パソコンの画面に、キャンパスの地図が表示された。以後は下部バーの「地図」からいつでも見返せる。", kind: "map", image: MAP_IMAGE },
+      ],
+      destination: null,
+      next: "story_map_intro",
+    },
+
+    // ============================================================
+    // 謎2〜5: マップ謎(4問・順不同) → 移動① かるたサークルのポスター前
+    // 4問はどの順番でも解けるハブ画面(map_hub)から出入りする。
+    // ============================================================
+    {
+      id: "story_map_intro",
+      type: "chat",
+      heading: "依頼人とのトーク【案】",
+      messages: [
+        { from: "system", text: "パソコンのロックを解除した" },
+        { from: "me", text: "ロックが解除できました。画面に地図が表示されています。" },
+        { from: "client", text: "地図ですか……？ Aさんが何か書き込んでいたのかもしれません。" },
+        { from: "me", text: "たどってみます。" },
+      ],
+      destination: null,
+      next: "map_hub",
+    },
+    {
+      id: "map_hub",
+      type: "hub",
+      heading: "マップの謎",
+      body: "4つの謎が見つかった。どれから解いても構わない。",
+      puzzles: ["puzzle_map1", "puzzle_map2", "puzzle_map3", "puzzle_map4"],
+      reward: { label: "かるたサークルのポスターの場所が判明", detail: "4つの謎を解き終えると、地図はかるたサークルのポスターの前を指し示した。", kind: "place" },
+      destination: null,
+      next: "move_poster",
+    },
+    {
+      id: "puzzle_map1", type: "puzzle", number: 2, heading: "マップ謎", optional: false,
+      image: "images/マップ謎_りんご.webp", imageAlt: "反省+囲碁+理科の謎",
+      prompt: "画像の式を解いて、答えとなる言葉を入力してください。",
+      answers: ["りんご"], inputMode: "text", maxLength: 20,
+      hints: [
+        "3つの言葉を、それぞれひらがなで書き出してみよう。",
+        "「はんせい」「いご」「りか」、全部のひらがなを並べ替えると、ある1つの文になります。",
+        "答え：りんご",
+      ],
+      reward: null, destination: null, next: "map_hub",
+    },
+    {
+      id: "puzzle_map2", type: "puzzle", number: 3, heading: "マップ謎", optional: false,
+      image: "images/マップ謎_ウサギ.png", imageAlt: "うえき=くさばな のマス目の謎",
+      prompt: "マス目から法則を見つけて「したみ」の答えを求めてください。",
+      answers: ["うさぎ"], inputMode: "text", maxLength: 20,
+      hints: [
+        "「うえき」は「上・き」と読めます。「き」の文字を探してみよう。",
+        "「き」の真上にあるマスから、上向きに1文字ずつ読んでみましょう。",
+        "答え：うさぎ",
+      ],
+      reward: null, destination: null, next: "map_hub",
+    },
+    {
+      id: "puzzle_map3", type: "puzzle", number: 4, heading: "マップ謎", optional: false,
+      image: "images/マップ謎_ゴリラ.webp", imageAlt: "直線でできた図形の謎",
+      prompt: "上の例のように、直線でできた図形が表す言葉を考えてください。",
+      answers: ["ゴリラ"], inputMode: "text", maxLength: 20,
+      hints: [
+        "直線だけでできた文字だと思って眺めてみてください。",
+        "1つ目の図形の組は「エリ」と読めます。同じ考え方で2つ目を読んでみましょう。",
+        "答え：ゴリラ",
+      ],
+      reward: null, destination: null, next: "map_hub",
+    },
+    {
+      id: "puzzle_map4", type: "puzzle", number: 5, heading: "マップ謎", optional: false,
+      image: "images/マップ謎_鳥.webp", imageAlt: "重なった図形の謎",
+      prompt: "この2つの図形は、実は2種類の文字が重なって描かれています。それぞれ分けて読み取ってください。",
+      answers: ["トリ"], inputMode: "text", maxLength: 20,
+      hints: [
+        "1本1本の線をたどって、2種類の文字を探してみましょう。",
+        "重なっているのを分けて考えると、カタカナ2文字になります。",
+        "答え：トリ",
+      ],
+      reward: null, destination: null, next: "map_hub",
+    },
+    {
+      id: "move_poster",
+      type: "move",
+      icon: "🚶",
+      heading: "移動① かるたサークルのポスター前へ",
+      body: "地図の示す場所へ実際に移動してください。\nポスターの前に着いたら、次に進んでください。",
+      destination: "かるたサークルのポスター前【要確定：設置場所】",
+      buttonLabel: "着いた(次へ)",
+      next: "puzzle_poster",
+    },
+
+    // ============================================================
+    // 謎6: ポスターの謎(任意) → 制作者「刈田」
+    // ============================================================
+    {
+      id: "puzzle_poster",
+      type: "puzzle",
+      number: 6,
+      heading: "ポスターの謎",
+      optional: true,
+      image: "images/puzzle6_poster.png",
+      imageAlt: "かるたサークルのポスター",
+      prompt: "【ここに問題文が入ります】(解かなくても進める任意の謎/募集中)\n※ポスターの制作者名は「刈田」と明記しておくこと【要確定】",
+      answers: ["こたえ"], inputMode: "text", maxLength: 20,
+      hints: ["【ヒント1】", "答え：こたえ【要確定】"],
+      reward: { label: "ポスターの制作者は「刈田」", detail: "ポスターの隅に、小さく制作者名が記されている。\n「制作：刈田」", font: "meiryo", kind: "person" },
+      destination: "かるたサークルのポスター前",
+      next: "puzzle_koban",
+    },
+
+    // ============================================================
+    // 謎7: 交番の場所 → 移動② 特設交番
+    // ============================================================
+    {
+      id: "puzzle_koban",
+      type: "puzzle",
+      number: 7,
+      heading: "交番の場所",
+      optional: false,
+      image: "images/交番謎.webp",
+      imageAlt: "交番の場所謎の画像",
+      prompt: "画像の指示にしたがって、3文字の言葉を答えてください。",
+      answers: ["たすく"], inputMode: "text", maxLength: 10,
+      hints: [
+        "文字を1つずつ抜き出すのではなく、ある言葉をまるごと抜き出します。",
+        "「6文字の鳥」と説明されている部分自体を、そのままひらがなで文字列の中から探してみてください。",
+        "答え：たすく",
+      ],
+      reward: { label: "特設交番で情報を入手", detail: "学祭にあたって特設された交番で、手がかりを入手した。(この情報は依頼人には共有していない)", kind: "doc" },
+      destination: "かるたサークルのポスター前",
+      next: "move_koban",
+    },
+    {
+      id: "move_koban",
+      type: "move",
+      icon: "🚓",
+      heading: "移動② 特設交番へ",
+      body: "解いた場所にある特設交番へ移動してください。",
+      destination: "特設交番【要確定：設置場所】",
+      buttonLabel: "着いた(次へ)",
+      next: "puzzle_anagram",
+    },
+
+    // ============================================================
+    // 謎8: アナグラム(任意・メイリオ表示) → 指名手配の資料
+    // ============================================================
+    {
+      id: "puzzle_anagram",
+      type: "puzzle",
+      number: 8,
+      heading: "指名手配資料の謎",
+      optional: true,
+      font: "meiryo",
+      image: "images/puzzle8_anagram.png",
+      imageAlt: "アナグラム謎の画像",
+      prompt: "【ここに問題文が入ります】(文字を並べ替えて答えるアナグラム謎/募集中)\n※このフォント(メイリオ)自体が「並べ替え」のヒントになっている【要確定】",
+      answers: ["こたえ"], inputMode: "text", maxLength: 20,
+      hints: ["【ヒント1】", "答え：こたえ【要確定】"],
+      reward: { label: "指名手配の情報を入手", detail: "現在指名手配されている人物についての資料を入手した。(捜索対象であるAさんに関する直接の情報ではない)", font: "meiryo", kind: "doc" },
+      destination: "特設交番",
+      next: "puzzle_file",
+    },
+
+    // ============================================================
+    // 謎9: ファイルのパスワード → 日記(ストーカーの存在)
+    // ============================================================
+    {
+      id: "puzzle_file",
+      type: "puzzle",
+      number: 9,
+      heading: "ファイルのパスワード",
+      optional: false,
+      image: "images/ファイル謎.webp",
+      imageAlt: "色分けされたマス目の謎",
+      prompt: "色の名前と、黒い線が通っている位置に注目してください。",
+      answers: ["あしどり"], inputMode: "text", maxLength: 10,
+      hints: [
+        "赤色は「あか」、緑色は「みどり」。では、線が通っている白い部分は？",
+        "「あか」「しろ」「みどり」、それぞれの言葉のどの文字の上を黒い線が通っているか見てみましょう。",
+        "答え：あしどり",
+      ],
+      reward: {
+        label: "Aさんの日記を入手",
+        detail: "ファイルを開くと、Aさんの日記が入っていた。",
+        kind: "diary",
+      },
+      // 日記の場面だけ縦書きで見せる(作中で唯一Aさん本人の声が直接出てくる箇所のため)。
+      // 前後の地の文は横書きのまま body に、引用部分だけ diaryVertical に分けて持つ。
+      diaryReveal: {
+        before: "ファイルを開くと、Aさんの日記が入っていた。",
+        vertical: [
+          "……ストーカーがいる気がする。",
+          "誰かに見られている、跡をつけられている。そんな気がしてならない。",
+          "しばらく、身を隠そうと思う。",
+        ],
+        after: "そこで日記は途切れていた。【要確定：日記の続き・分量】",
+      },
+      destination: "特設交番",
+      next: "puzzle_lion",
+    },
+
+    // ============================================================
+    // 謎10: LION謎(このゲームの核心) → 移動③ 分岐地点
+    // ============================================================
+    {
+      id: "puzzle_lion",
+      type: "puzzle",
+      lionSpecial: true,
+      number: 10,
+      heading: "LION謎",
+      optional: false,
+      image: MAP_IMAGE,
+      imageAlt: "地図(ライオン/NO17の場所が書き込まれている・全4問と共通)",
+      prompt: "【ここに問題文が入ります】\n(かるたサークルのポスターの中に「刈田」が作った謎があり、これを解くと答えが出てくる/募集中)\n※答えは必ず LION になる想定。地図には「ライオン」と「NO17」の場所がさりげなく書き込んである【要確定：地図デザイン】",
+      answers: ["LION"], inputMode: "text", maxLength: 10,
+      hints: ["【ヒント1】", "【ヒント2】", "答え：LION【確定】"],
+      reward: null, // 通常の reward ではなく、solveScene 内で専用の反転演出を出す
+      destination: "かるたサークルのポスター前",
+      next: "move_branch",
+    },
+    {
+      id: "move_branch",
+      type: "code",
+      heading: "移動③ 分岐地点",
+      body: "地図に書かれていた2つの場所——「ライオン」と「NO17」——のうち、\nあなたが選んだ場所へ実際に移動し、現地にある合言葉を入力してください。",
+      destination: "ライオン or NO17【要確定：設置場所】",
+      codeInputLabel: "現地の合言葉",
+      passLabel: "どこにも辿り着けなかった(このまま進める)",
+      next: "puzzle_final",
+    },
+
+    // ============================================================
+    // 最終謎: 最後はどこに行くべきか
+    // ============================================================
+    {
+      id: "puzzle_final",
+      type: "final",
+      heading: "最後はどこに行くべきか",
+      image: null,
+      prompt: "依頼人から「Aさんに会うためには、どこへ行けばいいか」と尋ねられた。\nこれまでに集めた手がかりを総合して、教室番号を答えてください。\n【要確定：教室番号の答え】",
+      answers: ["0000"], inputMode: "text", maxLength: 10,
+      hints: [
+        "「手がかり一覧」を開いて、今まで得た情報を見返してみよう。",
+        "特設交番で入手した情報がヒントになる。",
+        "答え：0000【要確定】",
+      ],
+      destination: null,
+      nextTrue: "ending_true",
+      nextNormal: "ending_normal",
+    },
+
+    // ============================================================
+    // エンディング
+    // ============================================================
+    {
+      id: "ending_true",
+      type: "ending",
+      variant: "true",
+      badge: "TRUE END",
+      heading: "真相へ",
+      body: [
+        "教えられた教室で、あなたはAさんと依頼人の両方に会うことになった。",
+        "集めた手がかりを並べると、恐ろしい真実が見えてくる——依頼人こそが、Aさんの言う「ストーカー」だったのだ。",
+        "【要確定：真相エンディングの本文】",
+      ],
+      next: null,
+    },
+    {
+      id: "ending_normal",
+      type: "ending",
+      variant: "normal",
+      badge: "NORMAL END",
+      heading: "とりあえずの解決",
+      body: [
+        "教えられた教室で、あなたはAさんと再会することができた。",
+        "事件の裏にある本当の事情までは、たどり着けなかったようだ。",
+        "【要確定：ノーマルエンディングの本文】",
+      ],
+      next: null,
+    },
+  ],
+};
+
+/* ============================================================
+ * エンジン — 描画・答え合わせ・進捗保存
+ * ここから下はシナリオ内容を書かない(CONFIGに全て出す)
+ * ============================================================ */
+(function () {
+  const STORAGE_KEY = "aescape_progress_v1";
+  const WRONG_RESCUE_THRESHOLD = 5;
+  // 手がかりの種類ラベル(6種)。未指定/未知の値は"doc"扱いにする。
+  const KIND_LABEL = { person: "人物", place: "場所", photo: "写真", diary: "日記", doc: "資料", map: "地図" };
+
+  /* ---------- DOMヘルパー ---------- */
+  function el(tag, attrs, children) {
+    const node = document.createElement(tag);
+    if (attrs) {
+      for (const k in attrs) {
+        if (attrs[k] === undefined) continue; // undefinedは属性を付けない(例: selected/patternの条件付き指定)
+        if (k === "class") node.className = attrs[k];
+        else if (k === "html") node.innerHTML = attrs[k];
+        else if (k.startsWith("on") && typeof attrs[k] === "function") node.addEventListener(k.slice(2), attrs[k]);
+        else node.setAttribute(k, attrs[k]);
+      }
+    }
+    (children || []).forEach((c) => {
+      if (c == null) return;
+      node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return node;
+  }
+  const $app = document.getElementById("app");
+  const $dest = document.getElementById("dest-value");
+
+  /* ---------- 答えの正規化 ----------
+   * 全角→半角・カタカナ→ひらがな・大小文字・空白/記号/長音を吸収する。
+   * ００００=0000 / ｌｉｏｎ=LION / コ タ エ=こたえ が全て一致する。
+   * この寛容さは絶対に削らないこと(スタッフの手入力ミスも救うための仕様)。
+   */
+  function norm(s) {
+    if (s == null) return "";
+    let v = String(s).normalize("NFKC").toLowerCase();
+    v = v.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60)); // カタカナ→ひらがな
+    v = v.replace(/[ー\-‐−–—]/g, ""); // 長音・各種ハイフンを除去
+    v = v.replace(/[^\p{L}\p{N}]/gu, ""); // 残りの空白・記号を除去
+    return v;
+  }
+  function matchAny(input, answers) {
+    const n = norm(input);
+    if (!n) return false;
+    return answers.some((a) => norm(a) === n);
+  }
+
+  /* ---------- 進捗の永続化(localStorage、ダメならメモリにフォールバック) ---------- */
+  const memoryFallback = {};
+  const hasStorage = (() => {
+    try {
+      const t = "__t__";
+      localStorage.setItem(t, "1");
+      localStorage.removeItem(t);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })();
+
+  function defaultState() {
+    return {
+      sceneId: CONFIG.scenes[0].id,
+      solved: {},
+      clues: [],
+      hintsOpened: {},
+      wrongCount: {},
+      truth: false,
+      branchChoice: null, // 'NO17CODE' / 'LIONCODE' / 'pass'
+      startedAt: null,
+      finishedAt: null,
+      solvedCount: 0,
+      storyLog: [], // 通過した物語(story)シーンのidを順番に記録し、「物語を振り返る」で一覧表示する
+    };
+  }
+
+  const store = {
+    load() {
+      try {
+        const raw = hasStorage ? localStorage.getItem(STORAGE_KEY) : memoryFallback.data;
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        // 古い保存データにkindが無い手がかりは、KEYを上げて進捗を捨てるのではなく"doc"を補って読み込む
+        if (Array.isArray(parsed.clues)) {
+          parsed.clues.forEach((c) => {
+            if (!c.kind) c.kind = "doc";
+          });
+        }
+        return Object.assign(defaultState(), parsed);
+      } catch (e) {
+        return defaultState();
+      }
+    },
+    save(state) {
+      const raw = JSON.stringify(state);
+      try {
+        if (hasStorage) localStorage.setItem(STORAGE_KEY, raw);
+        else memoryFallback.data = raw;
+      } catch (e) {
+        memoryFallback.data = raw;
+      }
+    },
+    reset() {
+      try {
+        if (hasStorage) localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+      memoryFallback.data = null;
+    },
+  };
+
+  let state = store.load();
+  function persist() {
+    store.save(state);
+  }
+
+  const sceneMap = {};
+  CONFIG.scenes.forEach((s) => (sceneMap[s.id] = s));
+  function scene(id) {
+    return sceneMap[id];
+  }
+
+  /* ---------- 画面切り替え ----------
+   * ブラウザ(スマホ)の「戻る」操作でひとつ前のシーンに戻れるよう、
+   * シーンを進めるたびに History API へ積んでおく。戻る操作は popstate で拾う。
+   */
+  function goto(id) {
+    if (!sceneMap[id]) {
+      console.error("未定義のシーンIDです:", id);
+      return;
+    }
+    state.sceneId = id;
+    persist();
+    try {
+      history.pushState({ sceneId: id }, "", location.pathname + location.search + location.hash);
+    } catch (e) {}
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  // 手がかり一覧・物語振り返り・画像の拡大表示(ライトボックス)を開くたびに、
+  // 履歴を1つ積んでおく。こうすることで、それらを開いた状態でスマホの「戻る」を
+  // 押しても場面そのものは動かず、開いていたものを閉じるだけで済む。
+  function pushOverlayHistory() {
+    try {
+      history.pushState({ sceneId: state.sceneId, overlay: true }, "", location.pathname + location.search + location.hash);
+    } catch (e) {}
+  }
+
+  window.addEventListener("popstate", (e) => {
+    // 手がかり一覧などのシート、画像拡大表示が開いていれば、「戻る」はまずそれを閉じるだけに使う
+    if (sheetEls || lb) {
+      closeSheetIfOpen();
+      closeLightbox();
+      return;
+    }
+    const sceneId = e.state && e.state.sceneId;
+    if (!sceneId || !sceneMap[sceneId]) return; // 合言葉ページ(#staff)のハッシュ由来のpopstateなどは無視
+    state.sceneId = sceneId;
+    persist();
+    render();
+    window.scrollTo(0, 0);
+  });
+
+  // reward は単一オブジェクトのほか、1つの謎で複数の手がかりを得る場合(謎1など)は配列でも渡せる
+  function addClue(reward, fromLabel) {
+    if (!reward) return;
+    const list = Array.isArray(reward) ? reward : [reward];
+    list.forEach((r) => {
+      state.clues.push({
+        label: r.label,
+        detail: r.detail || "",
+        font: r.font || null,
+        kind: r.kind || "doc", // 種類未指定はdocとして扱う
+        image: r.image || null,
+        from: fromLabel,
+      });
+    });
+  }
+
+  function markSolved(sceneId) {
+    if (!state.solved[sceneId]) {
+      state.solved[sceneId] = true;
+      state.solvedCount = (state.solvedCount || 0) + 1;
+    }
+  }
+
+  /* ---------- 地図の訪問軌跡 ----------
+   * 表示するのは「すでに訪問した／すでに解いた場所だけ」。未訪問の目的地は一切出さない。
+   * LION謎の分岐(ライオン/NO17)は、選ばなかった方を絶対に出してはいけない
+   * (分岐の存在自体がネタバレになるため)。
+   */
+  function getVisitedGridCells() {
+    const cells = new Set();
+    for (const sceneId in SCENE_GRID_CELL) {
+      const cell = SCENE_GRID_CELL[sceneId];
+      if (cell != null && state.solved[sceneId]) cells.add(cell);
+    }
+    if (state.branchChoice === "NO17CODE") cells.add(BRANCH_GRID_CELL.NO17CODE);
+    else if (state.branchChoice === "LIONCODE") cells.add(BRANCH_GRID_CELL.LIONCODE);
+    // branchChoiceが"pass"またはnullのときは、まだどちらにも実際に足を運んでいないので何も追加しない
+    return [...cells];
+  }
+
+  /* ---------- 目的地バーの更新 ---------- */
+  function updateDestBar() {
+    const s = scene(state.sceneId);
+    let label = "—";
+    if (s) {
+      if (s.destination) label = s.destination;
+      else if (s.type === "move" || s.type === "code") label = s.destination || "—";
+      else {
+        // 未来のシーンをたどって直近の目的地を探す(現在地に指定が無い場合)
+        let cur = s;
+        let guard = 0;
+        while (cur && guard < 20) {
+          if (cur.destination) {
+            label = cur.destination;
+            break;
+          }
+          const nid = cur.next || cur.nextTrue;
+          cur = nid ? scene(nid) : null;
+          guard++;
+        }
+      }
+    }
+    $dest.textContent = label;
+  }
+
+  /* ---------- 下部バーの表示切り替え ---------- */
+  const $btnHint = document.getElementById("btn-hint");
+  const $btnMap = document.getElementById("btn-map");
+  const $btnStory = document.getElementById("btn-story");
+  const $btnStaff = document.getElementById("btn-staff");
+  function updateBottomBar() {
+    const s = scene(state.sceneId);
+    const isPuzzleLike = s && (s.type === "puzzle" || s.type === "final") && s.hints && s.hints.length;
+    $btnHint.classList.toggle("hidden", !isPuzzleLike);
+    // 謎1(パソコンのパスワード)を解いて地図を入手した後は、いつでも「地図」ボタンから見返せる
+    $btnMap.classList.toggle("hidden", !state.solved["puzzle_pc"]);
+    // 物語(story)シーンをひとつでも通過していれば、いつでも読み返せる
+    $btnStory.classList.toggle("hidden", state.storyLog.length === 0);
+    $btnStaff.classList.toggle("hidden", location.hash !== "#staff");
+  }
+  $btnMap.addEventListener("click", () => openLightbox(CONFIG.mapImage, "地図"));
+  $btnStory.addEventListener("click", openStorySheet);
+
+  /* ============================================================
+   * シーン描画
+   * ============================================================ */
+  function render() {
+    const s = scene(state.sceneId);
+    document.body.className = "scene-" + s.type;
+    $app.innerHTML = "";
+    if (!state.startedAt && s.id !== CONFIG.scenes[0].id) state.startedAt = state.startedAt || Date.now();
+    switch (s.type) {
+      case "title":
+        renderTitle(s);
+        break;
+      case "chat":
+        renderChat(s);
+        break;
+      case "puzzle":
+        renderPuzzle(s);
+        break;
+      case "hub":
+        renderHub(s);
+        break;
+      case "final":
+        renderFinal(s);
+        break;
+      case "move":
+        renderMove(s);
+        break;
+      case "code":
+        renderCode(s);
+        break;
+      case "ending":
+        renderEnding(s);
+        break;
+      default:
+        $app.appendChild(el("p", null, ["未対応のシーン種別です: " + s.type]));
+    }
+    updateDestBar();
+    updateBottomBar();
+  }
+
+  function renderTitle(s) {
+    const wrap = el("div", { class: "title-wrap" }, [
+      el("h1", null, [s.heading]),
+      el("div", { class: "sub" }, [s.sub]),
+      el("div", { class: "lead" }, [s.lead]),
+      el("button", { class: "btn", onclick: () => { state.startedAt = Date.now(); goto(s.next); } }, [s.buttonLabel]),
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  // 依頼人とのやり取りは、地の文ではなくメッセージアプリふうのトーク画面で見せる。
+  // from: "client"(依頼人・左/吹き出し) / "me"(自分・右/吹き出し) / "system"(中央の小さな通知)
+  function renderChatMessage(m) {
+    if (m.from === "system") {
+      return el("div", { class: "chat-system-note" }, [m.text]);
+    }
+    const isMe = m.from === "me";
+    return el("div", { class: "chat-row " + (isMe ? "chat-row-me" : "chat-row-client") }, [
+      isMe ? null : el("div", { class: "chat-avatar" }, ["依"]),
+      el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, [m.text]),
+    ]);
+  }
+
+  function renderChat(s) {
+    if (!state.storyLog.includes(s.id)) {
+      state.storyLog.push(s.id);
+      persist();
+    }
+    const messages = el("div", { class: "chat-messages" }, s.messages.map(renderChatMessage));
+    const wrap = el("div", { class: "chat-wrap" }, [
+      el("h2", null, [s.heading]),
+      messages,
+      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ"]),
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  function renderImageBlock(src, alt) {
+    if (!src) return null;
+    const img = el("img", { class: "puzzle-image-thumb", src, alt: alt || "", onclick: () => openLightbox(src, alt) });
+    img.addEventListener("error", () => {
+      img.replaceWith(el("div", { class: "puzzle-image-thumb", style: "display:flex;align-items:center;justify-content:center;color:#a08;font-size:12px;padding:30px 10px;" }, [
+        "(画像未設置: " + src + ")",
+      ]));
+    });
+    const cap = el("div", { class: "puzzle-image-caption" }, ["タップで拡大表示"]);
+    const frag = document.createDocumentFragment();
+    frag.appendChild(img);
+    frag.appendChild(cap);
+    return frag;
+  }
+
+  function renderHintSection(s) {
+    const opened = state.hintsOpened[s.id] || 0;
+    const section = el("div", { class: "hint-section" }, []);
+    section.appendChild(el("h3", null, ["段階ヒント"]));
+    for (let i = 0; i < opened; i++) {
+      const isLast = i === s.hints.length - 1;
+      section.appendChild(
+        el("div", { class: "hint-item" + (isLast ? " answer" : "") }, [
+          el("span", { class: "hint-badge" }, [isLast ? "答え" : "ヒント" + (i + 1)]),
+          s.hints[i],
+        ])
+      );
+    }
+    if (opened < s.hints.length) {
+      const isNextLast = opened === s.hints.length - 1;
+      section.appendChild(
+        el("button", { class: "btn btn-ghost btn-block", id: "hint-open-btn", onclick: () => {
+          state.hintsOpened[s.id] = opened + 1;
+          persist();
+          render();
+          document.getElementById("btn-hint")?.scrollIntoView?.({ block: "nearest" });
+        } }, [isNextLast ? "答えを見る" : "次のヒントを見る (" + (opened + 1) + "/" + s.hints.length + ")"])
+      );
+    }
+    return section;
+  }
+
+  function renderRescueBox(s) {
+    const count = state.wrongCount[s.id] || 0;
+    if (count < WRONG_RESCUE_THRESHOLD) return null;
+    return el("div", { class: "rescue-box" }, [
+      "同じ謎で何度か外れているようです。ヒントを開いてみませんか？",
+      el("br"),
+      el("button", { class: "btn btn-secondary", onclick: () => {
+        const opened = state.hintsOpened[s.id] || 0;
+        if (opened < s.hints.length) {
+          state.hintsOpened[s.id] = opened + 1;
+          persist();
+        }
+        render();
+      } }, ["ヒントを見る"]),
+    ]);
+  }
+
+  function buildAnswerArea(s, onCorrect) {
+    const wrap = el("div", null, []);
+    const feedback = el("div", { class: "feedback" }, [""]);
+    const input = el("input", {
+      type: s.inputMode === "numeric" ? "tel" : "text",
+      inputmode: s.inputMode === "numeric" ? "numeric" : "text",
+      pattern: s.inputMode === "numeric" ? "[0-9]*" : undefined,
+      maxlength: String(s.maxLength || 30),
+      placeholder: s.inputMode === "numeric" ? "数字を入力" : "答えを入力",
+      "aria-label": "答えの入力欄",
+    });
+    const submit = () => {
+      if (matchAny(input.value, s.answers)) {
+        feedback.textContent = "正解！";
+        feedback.className = "feedback ok";
+        markSolved(s.id);
+        onCorrect();
+      } else {
+        feedback.textContent = "残念、違うようです。";
+        feedback.className = "feedback ng";
+        state.wrongCount[s.id] = (state.wrongCount[s.id] || 0) + 1;
+        persist();
+        renderRescueSlot();
+      }
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submit();
+    });
+    const row = el("div", { class: "answer-row" }, [
+      input,
+      el("button", { class: "btn", onclick: submit }, ["解答する"]),
+    ]);
+    wrap.appendChild(row);
+    wrap.appendChild(feedback);
+    const rescueSlot = el("div", null, []);
+    wrap.appendChild(rescueSlot);
+    function renderRescueSlot() {
+      rescueSlot.innerHTML = "";
+      const box = renderRescueBox(s);
+      if (box) rescueSlot.appendChild(box);
+    }
+    renderRescueSlot();
+    return wrap;
+  }
+
+  // 謎1(パソコンのパスワード)専用: PCのロック画面ふうの見た目。
+  // 実際の入力・答え合わせは通常どおりbuildAnswerAreaのinputで行い、
+  // このロック画面のドットは、その入力値をそのまま反映するだけの飾り。
+  function renderLockScreen(maxLength) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const weekday = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
+    const dateStr = now.getFullYear() + "年" + (now.getMonth() + 1) + "月" + now.getDate() + "日(" + weekday + ")";
+    const lockIcon = el("div", { class: "lock-icon", html:
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+    }, []);
+    const dots = [];
+    const dotsRow = el("div", { class: "lock-dots" }, Array.from({ length: maxLength }, () => {
+      const d = el("span", { class: "lock-dot" }, []);
+      dots.push(d);
+      return d;
+    }));
+    const screen = el("div", { class: "lock-screen" }, [
+      el("div", { class: "lock-time" }, [hh + ":" + mm]),
+      el("div", { class: "lock-date" }, [dateStr]),
+      lockIcon,
+      el("div", { class: "lock-label" }, ["パスコードを入力してください"]),
+      dotsRow,
+    ]);
+    function updateDots(value) {
+      const len = (value || "").length;
+      dots.forEach((d, i) => d.classList.toggle("filled", i < len));
+    }
+    return { screen, updateDots };
+  }
+
+  function renderPuzzle(s) {
+    const card = el("div", { class: "puzzle-card" }, []);
+    card.appendChild(el("div", { class: "puzzle-num" }, [s.number ? "謎 " + s.number : ""]));
+    card.appendChild(
+      el("h2", { class: "puzzle-title" }, [
+        s.heading,
+        s.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null,
+      ])
+    );
+    let lockScreenApi = null;
+    if (s.lockScreen) {
+      lockScreenApi = renderLockScreen(s.maxLength || 4);
+      card.appendChild(lockScreenApi.screen);
+    }
+    // lockScreen(ロック画面の飾り)はあくまで演出。謎を解くための画像自体は
+    // lockScreenの有無にかかわらず必ず表示する(でないと問題文の図が見えなくなる)。
+    const imgBlock = renderImageBlock(s.image, s.imageAlt);
+    if (imgBlock) card.appendChild(imgBlock);
+    card.appendChild(el("p", { class: "puzzle-prompt" + (s.font === "meiryo" ? " font-meiryo" : "") }, [s.prompt]));
+
+    if (state.solved[s.id]) {
+      if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
+      card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
+      card.appendChild(el("button", { class: "btn btn-block", onclick: () => afterSolve(s) }, ["次へ進む"]));
+    } else {
+      const answerArea = buildAnswerArea(s, () => { afterSolve(s); });
+      if (lockScreenApi) {
+        const input = answerArea.querySelector("input");
+        input.addEventListener("input", () => lockScreenApi.updateDots(input.value));
+      }
+      card.appendChild(answerArea);
+      if (s.optional) {
+        card.appendChild(
+          el("div", { class: "skip-row" }, [
+            el("button", { onclick: () => goto(s.next) }, ["この謎は解かずに次へ進む"]),
+          ])
+        );
+      }
+    }
+    card.appendChild(renderHintSection(s));
+    // 出戻り先(next)がハブ画面(順不同で解ける謎の一覧)なら、解かずにいつでも一覧へ戻れるようにする
+    if (scene(s.next) && scene(s.next).type === "hub") {
+      card.appendChild(
+        el("div", { class: "skip-row" }, [
+          el("button", { onclick: () => goto(s.next) }, ["← 謎の一覧に戻る"]),
+        ])
+      );
+    }
+    $app.appendChild(card);
+  }
+
+  function renderHub(s) {
+    const solvedIds = s.puzzles.filter((id) => state.solved[id]);
+    const allSolved = solvedIds.length === s.puzzles.length;
+    const grid = el("div", { class: "hub-grid" }, s.puzzles.map((id) => {
+      const p = scene(id);
+      const isSolved = !!state.solved[id];
+      return el("button", { class: "hub-card" + (isSolved ? " solved" : ""), onclick: () => goto(id) }, [
+        el("div", { class: "hub-num" }, [p && p.number ? "謎 " + p.number : ""]),
+        el("div", { class: "hub-status" }, [isSolved ? "解決済み" : "未解決"]),
+      ]);
+    }));
+    const wrap = el("div", { class: "hub-wrap" }, [
+      el("h2", null, [s.heading]),
+      s.body ? el("div", { class: "hub-intro" }, [s.body]) : null,
+      grid,
+      el("div", { class: "hub-progress" }, [solvedIds.length + " / " + s.puzzles.length + " 解決"]),
+      allSolved
+        ? el("button", { class: "btn btn-block", onclick: () => {
+            if (s.reward && !state.solved[s.id]) {
+              addClue(s.reward, s.heading);
+              markSolved(s.id);
+            }
+            goto(s.next);
+          } }, ["次へ進む"])
+        : null,
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  function afterSolve(s) {
+    if (s.reward) addClue(s.reward, s.heading);
+    if (s.lionSpecial) {
+      showLionReveal(s);
+      return;
+    }
+    if (s.diaryReveal) {
+      showDiaryReveal(s);
+      return;
+    }
+    goto(s.next);
+  }
+
+  /* ---------- 日記の場面専用の縦書き表示 ----------
+   * 作中で唯一Aさん本人の声が直接出てくる場面だけを縦書きにする。
+   * 縦書き(vertical-rl)は右から左に読むため、開いた瞬間に右端(＝1行目)が
+   * 見えている状態にしておく必要がある(でないと1行目が画面外になる)。
+   * 読みづらい参加者のために「横書きで読む」トグルも必ず付ける(状態は保存しない)。
+   */
+  function showDiaryReveal(s) {
+    const d = s.diaryReveal;
+    $app.innerHTML = "";
+    let vertical = true;
+    const box = el("div", { class: "diary-box" }, d.vertical.map((line) => el("p", null, [line])));
+    const toggleBtn = el("button", { class: "btn-secondary btn diary-toggle", type: "button" }, ["横書きで読む"]);
+    function applyMode() {
+      box.classList.toggle("diary-box-horizontal", !vertical);
+      toggleBtn.textContent = vertical ? "横書きで読む" : "縦書きで読む";
+      if (vertical) {
+        // 縦書きは右端が1行目。レイアウト確定後にスクロール位置を右端(最大値)へ。
+        requestAnimationFrame(() => { box.scrollLeft = box.scrollWidth; });
+      }
+    }
+    toggleBtn.addEventListener("click", () => {
+      vertical = !vertical;
+      applyMode();
+    });
+    const wrap = el("div", { class: "story-wrap diary-wrap" }, [
+      el("h2", null, [s.heading]),
+      el("div", { class: "story-body" }, [el("p", null, [d.before])]),
+      box,
+      el("div", { class: "diary-toggle-row" }, [toggleBtn]),
+      el("div", { class: "story-body" }, [el("p", null, [d.after])]),
+      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ"]),
+    ]);
+    $app.appendChild(wrap);
+    applyMode();
+  }
+
+  /* ---------- LION謎専用の反転演出 ----------
+   * 「先に答えを見せる実装に変えない」— 解答欄は左上に目印のある通常の
+   * ブラケット、正解後の指示文は同じブラケットを180度回転させたものを
+   * 使う。回転させるだけで目印が右下に移り、文字も反転して見える。
+   * 参加者自身が「向きが逆だ」と気づいて読み解く体験を壊さないこと。
+   */
+  function showLionReveal(s) {
+    $app.innerHTML = "";
+    const wrap = el("div", { class: "lion-reveal-wrap" }, [
+      el("div", { class: "lead-text" }, ["問題の答えは、この解答欄に書き込まれた——"]),
+      el("div", { class: "bracket-box" }, ["LION"]),
+      el("div", { class: "lead-text", style: "margin-top:26px;" }, ["そして、依頼人からのメモにはこう記されていた。"]),
+      el("div", null, [
+        "真相は",
+        el("span", { class: "bracket-box rotated" }, ["LION"]),
+        "にある。",
+      ]),
+      el("button", { class: "btn btn-block", style: "margin-top:30px;", onclick: () => {
+        addClue({ label: "「真相は〔LION〕にある」の指示文を入手", detail: "解答欄と指示文とで、かっこの向きが逆になっていることに気づいた。" }, s.heading);
+        goto(s.next);
+      } }, ["次へ進む"]),
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  function renderMove(s) {
+    const wrap = el("div", { class: "move-wrap" }, [
+      el("div", { class: "move-icon" }, [s.icon || "🚶"]),
+      el("h2", null, [s.heading]),
+      el("p", null, [s.body]),
+      s.destination ? el("div", { class: "move-dest" }, [
+        el("div", { class: "l" }, ["目的地"]),
+        el("div", { class: "v" }, [s.destination]),
+      ]) : null,
+      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, [s.buttonLabel || "次へ"]),
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  function renderCode(s) {
+    const feedback = el("div", { class: "feedback" }, [""]);
+    const input = el("input", { type: "text", placeholder: s.codeInputLabel || "合言葉", "aria-label": "合言葉の入力欄" });
+    const submit = () => {
+      const n = norm(input.value);
+      let hit = null;
+      for (const key in CONFIG.branchCodes) {
+        if (norm(CONFIG.branchCodes[key].match) === n) {
+          hit = key;
+          break;
+        }
+      }
+      if (hit) {
+        const truth = CONFIG.branchCodes[hit].truth;
+        state.truth = truth;
+        state.branchChoice = hit;
+        feedback.textContent = "合言葉を確認しました。";
+        feedback.className = "feedback ok";
+        persist();
+        goto(s.next);
+      } else {
+        feedback.textContent = "その合言葉は登録されていません。";
+        feedback.className = "feedback ng";
+      }
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    const card = el("div", { class: "puzzle-card" }, [
+      el("h2", { class: "puzzle-title" }, [s.heading]),
+      el("p", { class: "puzzle-prompt" }, [s.body]),
+      el("div", { class: "answer-row" }, [input, el("button", { class: "btn", onclick: submit }, ["入力する"])]),
+      feedback,
+    ]);
+    const passRow = el("div", { class: "code-pass" }, [
+      el("button", { onclick: () => {
+        state.truth = false;
+        state.branchChoice = "pass";
+        persist();
+        goto(s.next);
+      } }, [s.passLabel || "どこにも辿り着けなかった"]),
+    ]);
+    const wrap = el("div", { class: "code-wrap" }, [card, passRow]);
+    $app.appendChild(wrap);
+  }
+
+  function renderFinal(s) {
+    const card = el("div", { class: "puzzle-card" }, []);
+    card.appendChild(el("h2", { class: "puzzle-title" }, [s.heading]));
+    card.appendChild(el("p", { class: "puzzle-prompt" }, [s.prompt]));
+    card.appendChild(
+      el("button", { class: "btn btn-secondary btn-block", style: "margin-bottom:14px;", onclick: openClueSheet }, [
+        "手がかり一覧を見る(情報を総合する)",
+      ])
+    );
+    const answerArea = buildAnswerArea(s, () => {
+      state.finishedAt = Date.now();
+      persist();
+      const target = state.truth ? s.nextTrue : s.nextNormal;
+      goto(target);
+    });
+    card.appendChild(answerArea);
+    card.appendChild(renderHintSection(s));
+    $app.appendChild(card);
+  }
+
+  function formatDuration(ms) {
+    if (!ms || ms < 0) return "—";
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return m + "分" + String(sec).padStart(2, "0") + "秒";
+  }
+
+  function renderEnding(s) {
+    const duration = state.startedAt && state.finishedAt ? state.finishedAt - state.startedAt : null;
+    const shareText =
+      "脱出ゲーム「" + CONFIG.gameTitle + "」をクリアしました！\n" +
+      "エンディング: " + s.badge + "\n" +
+      "所要時間: " + formatDuration(duration) + "\n" +
+      "解いた謎: " + (state.solvedCount || 0) + "問";
+
+    const wrap = el("div", { class: "ending-wrap" }, [
+      el("div", { class: "ending-badge" }, [s.badge]),
+      el("h2", null, [s.heading]),
+      el("div", { class: "body" }, s.body.map((p) => el("p", { style: "margin:0 0 18px;" }, [p]))),
+      el("div", { class: "ending-stats" }, [
+        "所要時間: " + formatDuration(duration),
+        el("br"),
+        "解いた謎: " + (state.solvedCount || 0) + "問",
+      ]),
+      el("div", { class: "share-area" }, [
+        el("button", { class: "btn btn-block", onclick: () => shareResult(shareText) }, ["結果を共有する"]),
+      ]),
+    ]);
+    $app.appendChild(wrap);
+  }
+
+  async function shareResult(text) {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (e) {
+        /* ユーザーがキャンセルした場合などはコピーにフォールバック */
+      }
+    }
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      } catch (e) {}
+    }
+    const area = document.querySelector(".share-area");
+    if (!area) return;
+    let box = area.querySelector(".copy-fallback");
+    if (!box) {
+      box = el("div", { class: "copy-fallback" }, []);
+      area.appendChild(box);
+    }
+    box.innerHTML = "";
+    box.appendChild(el("div", { style: "font-size:12px;margin-top:10px;" }, [copied ? "クリップボードにコピーしました。" : "下のテキストを長押しでコピーしてください。"]));
+    const ta = el("textarea", { readonly: "true" }, []);
+    ta.value = text;
+    box.appendChild(ta);
+    if (!copied) ta.focus();
+    if (!copied) ta.select();
+  }
+
+  /* ============================================================
+   * 手がかり一覧(下部シート)
+   * ============================================================ */
+  let sheetEls = null;
+  function openClueSheet() {
+    closeSheetIfOpen();
+    pushOverlayHistory();
+    const backdrop = el("div", { class: "sheet-backdrop", onclick: closeSheetIfOpen }, []);
+    const list = el("div", { class: "sheet-body" }, []);
+    if (!state.clues.length) {
+      list.appendChild(el("div", { class: "empty-note" }, ["まだ手がかりはありません。謎を解くと、ここに記録されていきます。"]));
+    } else {
+      state.clues.forEach((c) => {
+        const img = c.image ? el("img", { src: c.image, alt: c.label, onclick: () => openLightbox(c.image, c.label) }) : null;
+        list.appendChild(
+          el("div", { class: "clue-item" }, [
+            el("div", { class: "clue-item-head" }, [
+              el("div", { class: "clue-from" }, [c.from || ""]),
+              el("span", { class: "clue-kind-badge clue-kind-" + (c.kind || "doc") }, [KIND_LABEL[c.kind] || KIND_LABEL.doc]),
+            ]),
+            el("div", { class: "clue-label" + (c.font === "meiryo" ? " font-meiryo" : "") }, [c.label]),
+            c.detail ? el("div", { class: "clue-detail" + (c.font === "meiryo" ? " font-meiryo" : "") }, [c.detail]) : null,
+            img,
+          ])
+        );
+      });
+    }
+    const sheet = el("div", { class: "sheet" }, [
+      el("div", { class: "sheet-header" }, [
+        el("h3", null, ["手がかり一覧"]),
+        el("button", { onclick: closeSheetIfOpen, "aria-label": "閉じる" }, ["×"]),
+      ]),
+      list,
+    ]);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+    sheetEls = [backdrop, sheet];
+  }
+  function closeSheetIfOpen() {
+    if (sheetEls) {
+      sheetEls.forEach((n) => n.remove());
+      sheetEls = null;
+    }
+  }
+  document.getElementById("btn-clue").addEventListener("click", openClueSheet);
+
+  /* ============================================================
+   * 物語を振り返る(下部シート)
+   * 通過した story シーンの本文を、いつでもタブを移動せずに読み返せるようにする。
+   * ============================================================ */
+  function openStorySheet() {
+    closeSheetIfOpen();
+    pushOverlayHistory();
+    const backdrop = el("div", { class: "sheet-backdrop", onclick: closeSheetIfOpen }, []);
+    const list = el("div", { class: "sheet-body" }, []);
+    if (!state.storyLog.length) {
+      list.appendChild(el("div", { class: "empty-note" }, ["まだ振り返れる物語はありません。"]));
+    } else {
+      state.storyLog.forEach((sceneId) => {
+        const s = scene(sceneId);
+        if (!s) return; // CONFIG編集でシーンが削除された場合の保険
+        list.appendChild(
+          el("div", { class: "story-log-item" }, [
+            el("div", { class: "story-log-heading" }, [s.heading]),
+            el("div", { class: "story-log-body chat-messages chat-messages-compact" }, s.messages.map(renderChatMessage)),
+          ])
+        );
+      });
+    }
+    const sheet = el("div", { class: "sheet" }, [
+      el("div", { class: "sheet-header" }, [
+        el("h3", null, ["物語を振り返る"]),
+        el("button", { onclick: closeSheetIfOpen, "aria-label": "閉じる" }, ["×"]),
+      ]),
+      list,
+    ]);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+    sheetEls = [backdrop, sheet];
+  }
+
+  document.getElementById("btn-hint").addEventListener("click", () => {
+    const s = scene(state.sceneId);
+    const target = document.querySelector(".hint-section");
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  /* ============================================================
+   * ライトボックス(画像拡大・ピンチズーム・ドラッグ)
+   * ============================================================ */
+  let lb = null;
+  function openLightbox(src, alt) {
+    closeLightbox();
+    pushOverlayHistory();
+    const isMap = src === CONFIG.mapImage;
+    const img = el("img", { src, alt: alt || "" });
+    const stage = el("div", { class: "lb-stage" }, [img]);
+    const closeBtn = el("button", { class: "lb-close", "aria-label": "閉じる", onclick: closeLightbox }, ["×"]);
+    const hintText = el("div", { class: "lb-hint" }, ["ピンチ/ホイール/ボタンで拡大縮小 ・ ドラッグで移動 ・ ダブルタップでリセット"]);
+    const zoomOutBtn = el("button", { class: "lb-zoom lb-zoom-out", "aria-label": "縮小" }, ["－"]);
+    const zoomInBtn = el("button", { class: "lb-zoom lb-zoom-in", "aria-label": "拡大" }, ["＋"]);
+    const zoomControls = el("div", { class: "lb-zoom-controls" }, [zoomOutBtn, zoomInBtn]);
+    const children = [stage, closeBtn, zoomControls, hintText];
+
+    let trailToggle = null;
+    if (isMap) {
+      const markerLayer = el("div", { class: "lb-markers" }, []);
+      stage.appendChild(markerLayer);
+      let trailOn = true;
+      trailToggle = el("button", { class: "lb-trail-toggle", type: "button" }, ["軌跡: ON"]);
+      function renderMarkers() {
+        markerLayer.innerHTML = "";
+        markerLayer.classList.toggle("hidden", !trailOn);
+        if (!trailOn) return;
+        getVisitedGridCells().forEach((n) => {
+          const r = gridCellRect(n);
+          markerLayer.appendChild(
+            el("div", {
+              class: "lb-marker",
+              style: "left:" + r.x * 100 + "%;top:" + r.y * 100 + "%;width:" + r.w * 100 + "%;height:" + r.h * 100 + "%;",
+            }, [el("span", { class: "lb-marker-badge" }, [String(n)])])
+          );
+        });
+      }
+      trailToggle.addEventListener("click", () => {
+        trailOn = !trailOn;
+        trailToggle.textContent = "軌跡: " + (trailOn ? "ON" : "OFF");
+        renderMarkers();
+      });
+      renderMarkers();
+      children.push(trailToggle);
+    }
+
+    const box = el("div", { id: "lightbox" }, children);
+    document.body.appendChild(box);
+    lb = box;
+    setupPinchZoom(box, stage, img, zoomInBtn, zoomOutBtn);
+  }
+  function closeLightbox() {
+    if (lb) {
+      lb.remove();
+      lb = null;
+    }
+  }
+
+  function setupPinchZoom(container, stage, img, zoomInBtn, zoomOutBtn) {
+    let scale = 1, tx = 0, ty = 0;
+    let lastTapTime = 0;
+    const pointers = new Map();
+    let pinchStartDist = 0, pinchStartScale = 1;
+    let dragStart = null;
+    const MIN_SCALE = 1, MAX_SCALE = 6;
+
+    // 拡大縮小の計算式そのもの(zoomTo/pointermoveのピンチ距離計算)は一切変更していない。
+    // 変えたのは「transformをかける対象」だけ(imgそのもの→img とマーカー層をまとめたstage)。
+    // これによりマーカーも画像とまったく同じ座標系で拡大・パンされ、ズレが生じない。
+    function apply() {
+      stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + scale + ")";
+      stage.style.setProperty("--zoom-scale", String(scale)); // マーカーの線幅をズーム倍率の逆数で補正するため
+    }
+    function centerImage() {
+      scale = 1; tx = 0; ty = 0;
+      requestAnimationFrame(() => {
+        const cw = container.clientWidth, ch = container.clientHeight;
+        const iw = img.naturalWidth || cw, ih = img.naturalHeight || ch;
+        const fitScale = Math.min(cw / iw, ch / ih);
+        stage.style.width = iw * fitScale + "px";
+        stage.style.height = ih * fitScale + "px";
+        tx = (cw - iw * fitScale) / 2;
+        ty = (ch - ih * fitScale) / 2;
+        apply();
+      });
+    }
+    if (img.complete) centerImage();
+    else img.addEventListener("load", centerImage);
+
+    // 指定した座標(コンテナ基準)の下にある画像の点を固定したまま、拡大率だけを変える。
+    // マウスホイール・+/-ボタン・ピンチのいずれもこの1つの関数で拡大縮小する。
+    function zoomTo(newScale, cx, cy) {
+      newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
+      if (cx == null) {
+        cx = container.clientWidth / 2;
+        cy = container.clientHeight / 2;
+      }
+      const imgX = (cx - tx) / scale;
+      const imgY = (cy - ty) / scale;
+      tx = cx - imgX * newScale;
+      ty = cy - imgY * newScale;
+      scale = newScale;
+      apply();
+    }
+
+    function dist(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    function mid(a, b) {
+      return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    }
+
+    container.addEventListener("pointerdown", (e) => {
+      container.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const pts = [...pointers.values()];
+        pinchStartDist = dist(pts[0], pts[1]);
+        pinchStartScale = scale;
+      } else if (pointers.size === 1) {
+        dragStart = { x: e.clientX, y: e.clientY, tx, ty };
+      }
+    });
+    container.addEventListener("pointermove", (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const pts = [...pointers.values()];
+        const d = dist(pts[0], pts[1]);
+        const rect = container.getBoundingClientRect();
+        const c = mid(pts[0], pts[1]);
+        if (pinchStartDist > 0) {
+          zoomTo(pinchStartScale * (d / pinchStartDist), c.x - rect.left, c.y - rect.top);
+        }
+      } else if (pointers.size === 1 && dragStart) {
+        tx = dragStart.tx + (e.clientX - dragStart.x);
+        ty = dragStart.ty + (e.clientY - dragStart.y);
+        apply();
+      }
+    });
+    function endPointer(e) {
+      pointers.delete(e.pointerId);
+      if (pointers.size === 1) {
+        const pt = [...pointers.values()][0];
+        dragStart = { x: pt.x, y: pt.y, tx, ty };
+      } else {
+        dragStart = null;
+      }
+    }
+    container.addEventListener("pointerup", endPointer);
+    container.addEventListener("pointercancel", endPointer);
+
+    container.addEventListener("pointerup", (e) => {
+      if (pointers.size > 0) return;
+      const now = Date.now();
+      if (now - lastTapTime < 300) {
+        if (scale > 1) {
+          centerImage();
+        } else {
+          const rect = container.getBoundingClientRect();
+          zoomTo(2.5, e.clientX - rect.left, e.clientY - rect.top);
+        }
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    });
+
+    // マウスホイール/トラックパッドのスクロールで、カーソル位置を中心に拡大縮小(PC向け)
+    container.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const rect = container.getBoundingClientRect();
+      const factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+      zoomTo(scale * factor, e.clientX - rect.left, e.clientY - rect.top);
+    }, { passive: false });
+
+    // 画面下の +/- ボタン(タッチ・マウス両対応)
+    if (zoomInBtn) zoomInBtn.addEventListener("click", () => zoomTo(scale * 1.4));
+    if (zoomOutBtn) zoomOutBtn.addEventListener("click", () => zoomTo(scale / 1.4));
+  }
+
+  /* ============================================================
+   * スタッフモード( #staff )
+   * ============================================================ */
+  function isStaffMode() {
+    return location.hash === "#staff";
+  }
+  function renderStaffPanelIfNeeded() {
+    const existing = document.getElementById("staffpanel");
+    if (!isStaffMode()) {
+      if (existing) existing.remove();
+      updateBottomBar();
+      return;
+    }
+    if (existing) existing.remove();
+    const panel = buildStaffPanel();
+    document.body.appendChild(panel);
+    updateBottomBar();
+  }
+  function buildStaffPanel() {
+    const panel = el("div", { id: "staffpanel" }, []);
+    panel.appendChild(el("h2", null, ["STAFFモード"]));
+    panel.appendChild(el("div", { class: "note" }, ["URLに #staff を付けると誰でも入れます(学園祭規模の簡易ガード)。参加者に案内しないこと。"]));
+
+    // 現在地ジャンプ
+    const jumpSection = el("section", null, [el("h3", null, ["シーンへジャンプ"])]);
+    const select = el("select", null, CONFIG.scenes.map((s) => el("option", { value: s.id, selected: s.id === state.sceneId ? "true" : undefined }, [s.id + " (" + s.type + (s.number ? " / 謎" + s.number : "") + ")"])));
+    const jumpBtn = el("button", { class: "btn", onclick: () => { goto(select.value); renderStaffPanelIfNeeded(); } }, ["移動する"]);
+    jumpSection.appendChild(el("div", { class: "staff-row" }, [select, jumpBtn]));
+    panel.appendChild(jumpSection);
+
+    // 謎の解答状態だけをリセット(デバッグ用。他の進捗・手がかりはそのまま)
+    const resettableIds = CONFIG.scenes.filter((s) => s.answers || s.type === "hub").map((s) => s.id);
+    const resetSelect = el("select", null, resettableIds.map((id) => {
+      const s = scene(id);
+      const label = id + (s.number ? " (謎" + s.number + ")" : s.type === "hub" ? " (ハブ)" : "") + (state.solved[id] ? " ✓解答済み" : "");
+      return el("option", { value: id }, [label]);
+    }));
+    const puzzleResetSection = el("section", null, [
+      el("h3", null, ["謎の解答状態をリセット(デバッグ用)"]),
+      el("div", { class: "note" }, ["選んだ謎だけを「未解答」に戻します。現在地・他の謎の進捗・獲得済みの手がかりはそのまま残ります(ハブを選ぶと中の謎も全てリセットされます)。再度解くと手がかりが重複して増えることがあります。気になる場合は下の「進捗をリセットする」を使ってください。"]),
+      el("div", { class: "staff-row" }, [
+        resetSelect,
+        el("button", { class: "btn", onclick: () => {
+          const id = resetSelect.value;
+          const s = scene(id);
+          const idsToReset = [id];
+          if (s && s.type === "hub") idsToReset.push(...s.puzzles);
+          idsToReset.forEach((pid) => {
+            if (state.solved[pid]) {
+              delete state.solved[pid];
+              state.solvedCount = Math.max(0, (state.solvedCount || 0) - 1);
+            }
+            delete state.hintsOpened[pid];
+            delete state.wrongCount[pid];
+          });
+          persist();
+          if (idsToReset.includes(state.sceneId)) render();
+          renderStaffPanelIfNeeded();
+        } }, ["この謎をリセット"]),
+      ]),
+    ]);
+    panel.appendChild(puzzleResetSection);
+
+    // 答え一覧
+    const ansSection = el("section", null, [el("h3", null, ["答え一覧"])]);
+    const table = el("table", null, []);
+    table.appendChild(el("tr", null, [el("th", null, ["謎"]), el("th", null, ["答え"]), el("th", null, ["合言葉/備考"])]));
+    CONFIG.scenes.forEach((s) => {
+      if (s.answers) {
+        table.appendChild(el("tr", null, [
+          el("td", null, [s.heading || s.id]),
+          el("td", null, [s.answers.join(" / ")]),
+          el("td", null, [""]),
+        ]));
+      }
+    });
+    for (const key in CONFIG.branchCodes) {
+      table.appendChild(el("tr", null, [
+        el("td", null, ["分岐合言葉"]),
+        el("td", null, [CONFIG.branchCodes[key].match]),
+        el("td", null, [CONFIG.branchCodes[key].truth ? "NO17(真相)" : "ライオン(空振り)"]),
+      ]));
+    }
+    ansSection.appendChild(table);
+    panel.appendChild(ansSection);
+
+    // 現在の全状態
+    const stateSection = el("section", null, [el("h3", null, ["現在の全状態"])]);
+    stateSection.appendChild(el("pre", null, [JSON.stringify(state, null, 2)]));
+    panel.appendChild(stateSection);
+
+    // リセット
+    const resetSection = el("section", null, [el("h3", null, ["進捗リセット"])]);
+    resetSection.appendChild(
+      el("button", { class: "btn", style: "background:var(--vermilion);", onclick: () => {
+        if (confirm("進捗をリセットします。よろしいですか？")) {
+          store.reset();
+          state = defaultState();
+          location.hash = "";
+          goto(state.sceneId);
+        }
+      } }, ["進捗をリセットする"])
+    );
+    panel.appendChild(resetSection);
+
+    const closeBtn = el("button", { class: "btn btn-ghost btn-block", onclick: () => { location.hash = ""; } }, ["STAFFモードを閉じる"]);
+    panel.appendChild(closeBtn);
+    return panel;
+  }
+  window.addEventListener("hashchange", renderStaffPanelIfNeeded);
+
+  /* ---------- 初期描画 ---------- */
+  // 「戻る」の起点となる履歴エントリを、今表示しているシーンで置き換えておく
+  try {
+    history.replaceState({ sceneId: state.sceneId }, "", location.pathname + location.search + location.hash);
+  } catch (e) {}
+  render();
+  renderStaffPanelIfNeeded();
+})();
+</script>
+</body>
+</html>
