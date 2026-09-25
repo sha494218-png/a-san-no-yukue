@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<title>Aさんの行方</title>
+<title>ある人の失踪 隠された真相からの脱出</title>
 <style>
 /* ==========================================================
    フォント同梱
@@ -101,6 +101,7 @@ input{font-family:inherit;}
 /* ---------- タイトル画面 ---------- */
 .title-wrap{min-height:calc(100vh - var(--topbar-h) - var(--bar-h));min-height:calc(100dvh - var(--topbar-h) - var(--bar-h));display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:22px;padding:24px 0;}
 .title-wrap h1{font-family:var(--mincho);font-size:30px;letter-spacing:0.08em;margin:0;}
+.title-wrap h1 .h1-sub{display:block;font-size:19px;letter-spacing:0.12em;margin-top:10px;opacity:0.9;}
 .title-wrap .sub{font-size:13px;opacity:0.75;letter-spacing:0.05em;}
 .title-wrap .lead{font-size:14px;line-height:1.9;white-space:pre-line;max-width:320px;opacity:0.9;}
 
@@ -427,7 +428,7 @@ const SCENE_GRID_CELL = {
 const BRANCH_GRID_CELL = { LIONCODE: 14, NO17CODE: 17 };
 
 const CONFIG = {
-  gameTitle: "Aさんの行方",
+  gameTitle: "ある人の失踪　隠された真相からの脱出", // シナリオ(Word)のヘッダーのタイトル
   mapImage: MAP_IMAGE, // 下部バーの「地図」ボタンが開く画像
 
   // 依頼人(小岩さん)のトーク画面のアイコン。
@@ -450,7 +451,8 @@ const CONFIG = {
     {
       id: "title",
       type: "title",
-      heading: "Aさんの行方",
+      heading: "ある人の失踪",
+      headingSub: "隠された真相からの脱出", // タイトル画面で主題の下に小さく表示
       sub: "三重大学学園祭 周回型リアル脱出ゲーム",
       lead: "このサイトはスマートフォン専用です。\n謎を解きながらキャンパス内を実際に歩いて周ります。\n受付で受け取った名刺(参加証)は、最後まで大切に持っていてください。\n画面を閉じても、続きから再開できます。",
       buttonLabel: "はじめる",
@@ -1056,7 +1058,7 @@ const CONFIG = {
   function updateDestBar() {
     const s = scene(state.sceneId);
     let label = "—";
-    if (s) {
+    if (s && s.type !== "title") { // タイトル画面では先の目的地を出さない
       if (s.destination) label = s.destination;
       else if (s.type === "move" || s.type === "code") label = s.destination || "—";
       else {
@@ -1137,7 +1139,7 @@ const CONFIG = {
 
   function renderTitle(s) {
     const wrap = el("div", { class: "title-wrap" }, [
-      el("h1", null, [s.heading]),
+      el("h1", null, [s.heading, s.headingSub ? el("span", { class: "h1-sub" }, [s.headingSub]) : null]),
       el("div", { class: "sub" }, [s.sub]),
       el("div", { class: "lead" }, [s.lead]),
       el("button", { class: "btn", onclick: () => { state.startedAt = Date.now(); goto(s.next); } }, [s.buttonLabel]),
