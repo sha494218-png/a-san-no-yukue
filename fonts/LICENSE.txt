@@ -1,0 +1,8 @@
+このフォルダのフォントについて
+
+- NotoSansJP-Variable.woff2  (Noto Sans JP)
+- NotoSerifJP-Variable.woff2 (Noto Serif JP)
+
+いずれも Google の Noto フォントで、SIL Open Font License, Version 1.1 のもとで配布されています。
+ライセンス全文: https://openfontlicense.org/open-font-license-official-text/
+配布元: https://fonts.google.com/noto/specimen/Noto+Sans+JP / https://fonts.google.com/noto/specimen/Noto+Serif+JP

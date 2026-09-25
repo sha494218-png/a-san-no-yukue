@@ -127,7 +127,7 @@ input{font-family:inherit;}
   max-width:74%;padding:10px 13px;border-radius:16px;
   font-size:14px;line-height:1.7;white-space:pre-line;word-break:break-word;
 }
-.chat-bubble.font-meiryo{font-family:var(--meiryo);}
+.chat-bubble.font-meiryo,.chat-avatar.font-meiryo{font-family:var(--meiryo);}
 .chat-bubble-client{background:var(--paper-2);border:1px solid var(--line);color:var(--text-dark);border-bottom-left-radius:4px;}
 .chat-bubble-me{background:var(--indigo);color:#fff;border-bottom-right-radius:4px;}
 .chat-messages-compact .chat-bubble{font-size:13px;padding:8px 12px;}
@@ -430,12 +430,19 @@ const CONFIG = {
   gameTitle: "Aさんの行方",
   mapImage: MAP_IMAGE, // 下部バーの「地図」ボタンが開く画像
 
+  // 依頼人(小岩さん)のトーク画面のアイコン。
+  // 流れ資料より「依頼人と刈田の名前はアナグラム謎と同じフォント(メイリオ)で書く」ため meiryo を指定。
+  clientAvatar: "小",
+  clientNameFont: "meiryo",
+
   // ---- 現地の合言葉(本番投入前に必ず差し替えること。README参照) ----
   branchCodes: {
     NO17CODE: { match: "NO17CODE", truth: true },   // 正しい場所(NO17)の合言葉
     LIONCODE: { match: "LIONCODE", truth: false },  // 空振りの場所(ライオン)の合言葉
   },
 
+  // シーン構成は シナリオ/Aさんの行方シナリオ.docx(2026-09-25版)に準拠。
+  // 物語の文言は「案」を含むので、【要確定】の箇所は運営で確定すること。
   scenes: [
     // ============================================================
     // タイトル
@@ -445,7 +452,7 @@ const CONFIG = {
       type: "title",
       heading: "Aさんの行方",
       sub: "三重大学学園祭 周回型リアル脱出ゲーム",
-      lead: "このサイトはスマートフォン専用です。\n謎を解きながらキャンパス内を実際に歩いて周ります。\n画面を閉じても、続きから再開できます。",
+      lead: "このサイトはスマートフォン専用です。\n謎を解きながらキャンパス内を実際に歩いて周ります。\n受付で受け取った名刺(参加証)は、最後まで大切に持っていてください。\n画面を閉じても、続きから再開できます。",
       buttonLabel: "はじめる",
       next: "story_open",
     },
@@ -456,15 +463,15 @@ const CONFIG = {
     {
       id: "story_open",
       type: "chat",
-      heading: "依頼人とのトーク【案】",
+      heading: "小岩さんとのトーク",
       messages: [
-        { from: "system", text: "依頼人とのトークが始まりました" },
-        { from: "client", text: "はじめまして。ご相談したいことがあります。" },
-        { from: "client", text: "知人のAさんと、しばらく連絡が取れていません。" },
-        { from: "client", text: "Aさんが使っていたノートパソコンを預かっているので、お送りします。中に手がかりがあるかもしれません。" },
-        { from: "system", text: "依頼人からノートパソコンが届いた" },
+        { from: "system", text: "受付で名刺(参加証)を受け取った" },
+        { from: "system", text: "依頼人・小岩さんとのトークが始まりました" },
+        { from: "client", text: "はじめまして、小岩と申します。探偵さんにご相談したいことがあります。" },
+        { from: "client", text: "知人のAさんと、しばらく連絡が取れていないんです。" },
+        { from: "client", text: "Aさんが使っていたパソコンを預かっています。中に手がかりがあるかもしれません。" },
         { from: "client", text: "ただ……パスワードがかかっていて、わたしには開けませんでした。" },
-        { from: "me", text: "わかりました。中を確認してみます。" },
+        { from: "me", text: "わかりました。パスワードを解いてみます。" },
       ],
       destination: null,
       next: "puzzle_pc",
@@ -476,7 +483,7 @@ const CONFIG = {
       heading: "パソコンのパスワード",
       optional: false,
       lockScreen: true, // ロック画面ふうの見た目にする
-      image: "images/パソコン謎.webp",
+      image: "images/pc_password.webp",
       imageAlt: "パソコンのパスワード謎の画像",
       prompt: "画像の法則を見つけて、4桁の数字を入力してください。",
       answers: ["3433"],
@@ -488,26 +495,31 @@ const CONFIG = {
         "答え：3433",
       ],
       reward: [
-        { label: "依頼人と連絡が取れる", detail: "パソコンのロックが解除され、依頼人とやり取りできるようになった。", kind: "person" },
-        { label: "学内マップを入手", detail: "パソコンの画面に、キャンパスの地図が表示された。以後は下部バーの「地図」からいつでも見返せる。", kind: "map", image: MAP_IMAGE },
+        { label: "依頼人の小岩さんと連絡が取れる", detail: "パソコンのロックが解除され、小岩さんとやり取りできるようになった。", kind: "person" },
+        { label: "学内マップを入手", detail: "小岩さんのパネルから学内マップを受け取った。マップの裏面には人物紹介が載っている。以後は下部バーの「地図」からいつでも見返せる。", kind: "map", image: MAP_IMAGE },
       ],
       destination: null,
       next: "story_map_intro",
     },
 
     // ============================================================
-    // 謎2〜5: マップ謎(4問・順不同) → 移動① かるたサークルのポスター前
+    // 謎2〜5: マップ謎(4問・順不同) — 4つの場所を巡る
     // 4問はどの順番でも解けるハブ画面(map_hub)から出入りする。
+    // 謎6(ポスター1枚目・任意)も、刈田の情報2の近くに貼るためハブに置く。
     // ============================================================
     {
       id: "story_map_intro",
       type: "chat",
-      heading: "依頼人とのトーク【案】",
+      heading: "小岩さんとのトーク",
       messages: [
-        { from: "system", text: "パソコンのロックを解除した" },
-        { from: "me", text: "ロックが解除できました。画面に地図が表示されています。" },
-        { from: "client", text: "地図ですか……？ Aさんが何か書き込んでいたのかもしれません。" },
-        { from: "me", text: "たどってみます。" },
+        { from: "system", text: "パソコンのロックが解除された" },
+        { from: "client", text: "開いたんですね！ 画面には何が映っていますか？" },
+        { from: "me", text: "学内の地図が表示されています。" },
+        { from: "client", text: "その地図なら、わたしのパネルのところに置いてあります。受け取ってください。" },
+        { from: "system", text: "小岩さんのパネルから、学内マップを受け取った(裏面には人物紹介)" },
+        { from: "system", text: "マップと一緒に、謎と指示書が出てきた" },
+        { from: "system", text: "指示書「四つの場所を巡ったのち、その中心へ向かえ」" },
+        { from: "me", text: "マップの謎を解いて、4つの場所を回ってみます。" },
       ],
       destination: null,
       next: "map_hub",
@@ -516,15 +528,17 @@ const CONFIG = {
       id: "map_hub",
       type: "hub",
       heading: "マップの謎",
-      body: "4つの謎が見つかった。どれから解いても構わない。",
+      body: "マップと一緒に出てきた4つの謎。答えは地図上の場所を示している。\n解けたら、その場所へ実際に行って情報を確かめよう。どれから解いても構わない。",
       puzzles: ["puzzle_map1", "puzzle_map2", "puzzle_map3", "puzzle_map4"],
-      reward: { label: "かるたサークルのポスターの場所が判明", detail: "4つの謎を解き終えると、地図はかるたサークルのポスターの前を指し示した。", kind: "place" },
-      destination: null,
-      next: "move_poster",
+      optionalPuzzles: ["puzzle_poster"], // 任意の謎(解かなくても「次へ進む」は出る)
+      reward: { label: "4つの場所を巡り終えた", detail: "指示書「四つの場所を巡ったのち、その中心へ向かえ」", kind: "doc" },
+      destination: "マップ謎の答えが示す4つの場所",
+      next: "story_center",
     },
+    // 【要確定】どの謎の場所でどの情報が得られるかの対応は、シナリオの記載順に仮で割り当てています。
     {
       id: "puzzle_map1", type: "puzzle", number: 2, heading: "マップ謎", optional: false,
-      image: "images/マップ謎_りんご.webp", imageAlt: "反省+囲碁+理科の謎",
+      image: "images/map_apple.webp", imageAlt: "反省+囲碁+理科の謎",
       prompt: "画像の式を解いて、答えとなる言葉を入力してください。",
       answers: ["りんご"], inputMode: "text", maxLength: 20,
       hints: [
@@ -532,23 +546,25 @@ const CONFIG = {
         "「はんせい」「いご」「りか」、全部のひらがなを並べ替えると、ある1つの文になります。",
         "答え：りんご",
       ],
-      reward: null, destination: null, next: "map_hub",
+      reward: { label: "「りんご」の場所：ミエダイ探偵の情報", detail: "地図の「りんご」の場所に、ミエダイ探偵についての情報が置いてある。現地で確認しよう。", kind: "person" },
+      destination: null, next: "map_hub",
     },
     {
       id: "puzzle_map2", type: "puzzle", number: 3, heading: "マップ謎", optional: false,
-      image: "images/マップ謎_ウサギ.png", imageAlt: "うえき=くさばな のマス目の謎",
+      image: "images/map_rabbit.webp", imageAlt: "うえき=くさばな のマス目の謎",
       prompt: "マス目から法則を見つけて「したみ」の答えを求めてください。",
       answers: ["うさぎ"], inputMode: "text", maxLength: 20,
       hints: [
         "「うえき」は「上・き」と読めます。「き」の文字を探してみよう。",
-        "「き」の真上にあるマスから、上向きに1文字ずつ読んでみましょう。",
+        "「したみ」は「下・み」。「み」の真下にあるマスを、上から順に読んでみましょう。",
         "答え：うさぎ",
       ],
-      reward: null, destination: null, next: "map_hub",
+      reward: { label: "「うさぎ」の場所：刈田の情報", detail: "地図の「うさぎ」の場所に、刈田という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
+      destination: null, next: "map_hub",
     },
     {
       id: "puzzle_map3", type: "puzzle", number: 4, heading: "マップ謎", optional: false,
-      image: "images/マップ謎_ゴリラ.webp", imageAlt: "直線でできた図形の謎",
+      image: "images/map_gorilla.webp", imageAlt: "直線でできた図形の謎",
       prompt: "上の例のように、直線でできた図形が表す言葉を考えてください。",
       answers: ["ゴリラ"], inputMode: "text", maxLength: 20,
       hints: [
@@ -556,11 +572,12 @@ const CONFIG = {
         "1つ目の図形の組は「エリ」と読めます。同じ考え方で2つ目を読んでみましょう。",
         "答え：ゴリラ",
       ],
-      reward: null, destination: null, next: "map_hub",
+      reward: { label: "「ゴリラ」の場所：刈田の情報(2)", detail: "地図の「ゴリラ」の場所に、刈田についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
+      destination: null, next: "map_hub",
     },
     {
       id: "puzzle_map4", type: "puzzle", number: 5, heading: "マップ謎", optional: false,
-      image: "images/マップ謎_鳥.webp", imageAlt: "重なった図形の謎",
+      image: "images/map_bird.webp", imageAlt: "重なった図形の謎",
       prompt: "この2つの図形は、実は2種類の文字が重なって描かれています。それぞれ分けて読み取ってください。",
       answers: ["トリ"], inputMode: "text", maxLength: 20,
       hints: [
@@ -568,58 +585,74 @@ const CONFIG = {
         "重なっているのを分けて考えると、カタカナ2文字になります。",
         "答え：トリ",
       ],
-      reward: null, destination: null, next: "map_hub",
-    },
-    {
-      id: "move_poster",
-      type: "move",
-      icon: "🚶",
-      heading: "移動① かるたサークルのポスター前へ",
-      body: "地図の示す場所へ実際に移動してください。\nポスターの前に着いたら、次に進んでください。",
-      destination: "かるたサークルのポスター前【要確定：設置場所】",
-      buttonLabel: "着いた(次へ)",
-      next: "puzzle_poster",
+      reward: { label: "「トリ」の場所：アナグラムの情報", detail: "地図の「トリ」の場所に、アナグラムについての情報が置いてある。現地で確認しよう。\nマップ裏の人物紹介の「穴あき」部分に使えそうだ。", kind: "doc" },
+      destination: null, next: "map_hub",
     },
 
     // ============================================================
-    // 謎6: ポスターの謎(任意) → 制作者「刈田」
+    // 謎6: ポスター(1枚目)の謎(任意) → 制作者「刈田」
+    // かるたサークル全体のポスター。LION謎のポスター(2枚目)とは別物。
     // ============================================================
     {
       id: "puzzle_poster",
       type: "puzzle",
       number: 6,
-      heading: "ポスターの謎",
+      heading: "ポスターの謎(1枚目)",
       optional: true,
       image: "images/puzzle6_poster.png",
-      imageAlt: "かるたサークルのポスター",
+      imageAlt: "かるたサークルのポスター(1枚目)",
       prompt: "【ここに問題文が入ります】(解かなくても進める任意の謎/募集中)\n※ポスターの制作者名は「刈田」と明記しておくこと【要確定】",
       answers: ["こたえ"], inputMode: "text", maxLength: 20,
       hints: ["【ヒント1】", "答え：こたえ【要確定】"],
       reward: { label: "ポスターの制作者は「刈田」", detail: "ポスターの隅に、小さく制作者名が記されている。\n「制作：刈田」", font: "meiryo", kind: "person" },
-      destination: "かるたサークルのポスター前",
-      next: "puzzle_koban",
+      destination: "かるたサークルのポスター(1枚目)前",
+      next: "map_hub",
     },
 
     // ============================================================
-    // 謎7: 交番の場所 → 移動② 特設交番
+    // 4つの場所の中心へ → 謎7: 交番の場所(掲示板の謎)
     // ============================================================
+    {
+      id: "story_center",
+      type: "chat",
+      heading: "4つの場所を巡って",
+      messages: [
+        { from: "system", text: "4つの場所を巡り終えた" },
+        { from: "system", text: "アナグラムの情報をもとに、マップ裏の人物紹介の穴あき部分を埋めると……" },
+        { from: "system", text: "「中心へ向かえ」という指示が浮かび上がった" },
+        { from: "me", text: "4つの場所の中心……そこに何かあるはずです。" },
+        { from: "client", text: "よろしくお願いします。何かわかったら教えてください。" },
+      ],
+      destination: null,
+      next: "move_center",
+    },
+    {
+      id: "move_center",
+      type: "move",
+      icon: "🚶",
+      heading: "移動① 4つの場所の中心へ",
+      body: "地図の上で、4つの場所の中心にあたる所へ移動してください。\n掲示板に謎が貼り付けてあります。着いたら次へ進んでください。",
+      destination: "4つの場所の中心(掲示板)【要確定：設置場所】",
+      buttonLabel: "着いた(次へ)",
+      next: "puzzle_koban",
+    },
     {
       id: "puzzle_koban",
       type: "puzzle",
       number: 7,
       heading: "交番の場所",
       optional: false,
-      image: "images/交番謎.webp",
+      image: "images/koban.webp",
       imageAlt: "交番の場所謎の画像",
-      prompt: "画像の指示にしたがって、3文字の言葉を答えてください。",
+      prompt: "掲示板に貼られていた、交番の場所についての謎。\n画像の指示にしたがって、3文字の言葉を答えてください。",
       answers: ["たすく"], inputMode: "text", maxLength: 10,
       hints: [
         "文字を1つずつ抜き出すのではなく、ある言葉をまるごと抜き出します。",
         "「6文字の鳥」と説明されている部分自体を、そのままひらがなで文字列の中から探してみてください。",
         "答え：たすく",
       ],
-      reward: { label: "特設交番で情報を入手", detail: "学祭にあたって特設された交番で、手がかりを入手した。(この情報は依頼人には共有していない)", kind: "doc" },
-      destination: "かるたサークルのポスター前",
+      reward: { label: "特設交番の場所が判明", detail: "学祭にあたって特設された交番の場所がわかった。(この場所は小岩さんには伝えていない)", kind: "place" },
+      destination: "4つの場所の中心(掲示板)",
       next: "move_koban",
     },
     {
@@ -627,44 +660,53 @@ const CONFIG = {
       type: "move",
       icon: "🚓",
       heading: "移動② 特設交番へ",
-      body: "解いた場所にある特設交番へ移動してください。",
+      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)",
       destination: "特設交番【要確定：設置場所】",
-      buttonLabel: "着いた(次へ)",
-      next: "puzzle_anagram",
+      buttonLabel: "交番に入れた(次へ)",
+      next: "story_koban",
     },
 
     // ============================================================
-    // 謎8: アナグラム(任意・メイリオ表示) → 指名手配の資料
+    // 特設交番 — 刈田が預けた物 / 謎8: アナグラム(任意) / 謎9: ファイル
     // ============================================================
+    {
+      id: "story_koban",
+      type: "chat",
+      heading: "特設交番にて",
+      messages: [
+        { from: "system", text: "名刺を見せて敬礼すると、交番の中に通された" },
+        { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(ファイルのQRコード)" },
+        { from: "system", text: "あわせて「捜査協力のお願い」と書かれた紙(QRコード)も渡された" },
+        { from: "me", text: "刈田さんが預けていた物……。中を確認してみよう。" },
+      ],
+      destination: "特設交番",
+      next: "puzzle_anagram",
+    },
     {
       id: "puzzle_anagram",
       type: "puzzle",
       number: 8,
-      heading: "指名手配資料の謎",
+      heading: "捜査協力の謎",
       optional: true,
       font: "meiryo",
       image: "images/puzzle8_anagram.png",
       imageAlt: "アナグラム謎の画像",
-      prompt: "【ここに問題文が入ります】(文字を並べ替えて答えるアナグラム謎/募集中)\n※このフォント(メイリオ)自体が「並べ替え」のヒントになっている【要確定】",
+      prompt: "「捜査協力のお願い」のQRコードを読み込むと、この謎が出てきた。\n【ここに問題文が入ります】(文字を並べ替えて答えるアナグラム謎/募集中)\n※このフォント(メイリオ)自体が「並べ替え」のヒントになっている【要確定】",
       answers: ["こたえ"], inputMode: "text", maxLength: 20,
       hints: ["【ヒント1】", "答え：こたえ【要確定】"],
-      reward: { label: "指名手配の情報を入手", detail: "現在指名手配されている人物についての資料を入手した。(捜索対象であるAさんに関する直接の情報ではない)", font: "meiryo", kind: "doc" },
+      reward: { label: "指名手配書の一覧を閲覧", detail: "捜査協力のお礼に、指名手配書の一覧を見せてもらった。\n一覧の中には「河合 奈恵子(かわい なえこ)」という名前も載っている。", font: "meiryo", kind: "doc" },
       destination: "特設交番",
       next: "puzzle_file",
     },
-
-    // ============================================================
-    // 謎9: ファイルのパスワード → 日記(ストーカーの存在)
-    // ============================================================
     {
       id: "puzzle_file",
       type: "puzzle",
       number: 9,
       heading: "ファイルのパスワード",
       optional: false,
-      image: "images/ファイル謎.webp",
+      image: "images/file_password.webp",
       imageAlt: "色分けされたマス目の謎",
-      prompt: "色の名前と、黒い線が通っている位置に注目してください。",
+      prompt: "刈田さんが預けていたQRコードを読み込むと、パスワード付きのファイルが出てきた。\n色の名前と、黒い線が通っている位置に注目してください。",
       answers: ["あしどり"], inputMode: "text", maxLength: 10,
       hints: [
         "赤色は「あか」、緑色は「みどり」。では、線が通っている白い部分は？",
@@ -673,68 +715,96 @@ const CONFIG = {
       ],
       reward: {
         label: "Aさんの日記を入手",
-        detail: "ファイルを開くと、Aさんの日記が入っていた。",
+        detail: "ファイルの中身はAさんの日記だった。\nストーカーがいること、自分の意思で身を隠すことが書かれていた。\n最後には、ある場所へ向かえという指示があった。",
         kind: "diary",
       },
       // 日記の場面だけ縦書きで見せる(作中で唯一Aさん本人の声が直接出てくる箇所のため)。
-      // 前後の地の文は横書きのまま body に、引用部分だけ diaryVertical に分けて持つ。
       diaryReveal: {
         before: "ファイルを開くと、Aさんの日記が入っていた。",
         vertical: [
           "……ストーカーがいる気がする。",
           "誰かに見られている、跡をつけられている。そんな気がしてならない。",
-          "しばらく、身を隠そうと思う。",
+          "しばらく、自分の意思で身を隠そうと思う。",
         ],
-        after: "そこで日記は途切れていた。【要確定：日記の続き・分量】",
+        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】",
       },
       destination: "特設交番",
-      next: "puzzle_lion",
+      next: "move_poster2",
     },
 
     // ============================================================
-    // 謎10: LION謎(このゲームの核心) → 移動③ 分岐地点
+    // 謎10: LION謎(ポスター2枚目・このゲームの核心)
     // ============================================================
+    {
+      id: "move_poster2",
+      type: "move",
+      icon: "🚶",
+      heading: "移動③ かるたサークルのポスター(2枚目)へ",
+      body: "日記に書かれていた場所へ移動してください。\nポスターの前に着いたら、次へ進んでください。",
+      destination: "かるたサークルのポスター(2枚目)前【要確定：設置場所】",
+      buttonLabel: "着いた(次へ)",
+      next: "puzzle_lion",
+    },
     {
       id: "puzzle_lion",
       type: "puzzle",
       lionSpecial: true,
       number: 10,
-      heading: "LION謎",
+      heading: "ポスターの謎(2枚目)",
       optional: false,
       image: MAP_IMAGE,
-      imageAlt: "地図(ライオン/NO17の場所が書き込まれている・全4問と共通)",
-      prompt: "【ここに問題文が入ります】\n(かるたサークルのポスターの中に「刈田」が作った謎があり、これを解くと答えが出てくる/募集中)\n※答えは必ず LION になる想定。地図には「ライオン」と「NO17」の場所がさりげなく書き込んである【要確定：地図デザイン】",
+      imageAlt: "地図(ライオン/NO17の場所が書き込まれている)",
+      prompt: "ポスター(2枚目)には、刈田が作った謎が載っていた。\n【ここに問題文が入ります】\n※答えは必ず LION になる想定。地図には「ライオン」と「NO17」の場所がさりげなく書き込んである【要確定：ポスター2枚目の画像】",
       answers: ["LION"], inputMode: "text", maxLength: 10,
       hints: ["【ヒント1】", "【ヒント2】", "答え：LION【確定】"],
       reward: null, // 通常の reward ではなく、solveScene 内で専用の反転演出を出す
-      destination: "かるたサークルのポスター前",
+      revealLead: "そして、ポスターの隅にはこう記されていた。",
+      destination: "かるたサークルのポスター(2枚目)前",
       next: "move_branch",
     },
     {
       id: "move_branch",
       type: "code",
-      heading: "移動③ 分岐地点",
-      body: "地図に書かれていた2つの場所——「ライオン」と「NO17」——のうち、\nあなたが選んだ場所へ実際に移動し、現地にある合言葉を入力してください。",
+      heading: "移動④ 分岐地点",
+      body: "地図に書かれていた2つの場所——「ライオン」と「NO17」。\n正しいと思う方へ実際に移動し、現地のQRコードを読み取って、書かれている合言葉を入力してください。",
       destination: "ライオン or NO17【要確定：設置場所】",
       codeInputLabel: "現地の合言葉",
       passLabel: "どこにも辿り着けなかった(このまま進める)",
+      nextTrue: "story_truth",
+      nextNormal: "puzzle_final",
+    },
+    {
+      id: "story_truth",
+      type: "chat",
+      heading: "NO17の場所で",
+      messages: [
+        { from: "system", text: "QRコードを読み取ると、事件の真相につながる情報が表示された" },
+        { from: "system", text: "【要確定：NO17で得られる情報の本文(依頼人の小岩さんがストーカーだと推理できる内容)】" },
+        { from: "me", text: "……まさか。" },
+      ],
+      destination: null,
       next: "puzzle_final",
     },
 
     // ============================================================
-    // 最終謎: 最後はどこに行くべきか
+    // 最終謎: 小岩さんに向かうべき場所を伝える(看板謎)
+    // 【案】看板謎(答え 2010・文字の穴の数)を教室の指定に使う想定で接続しています。
     // ============================================================
     {
       id: "puzzle_final",
       type: "final",
-      heading: "最後はどこに行くべきか",
-      image: null,
-      prompt: "依頼人から「Aさんに会うためには、どこへ行けばいいか」と尋ねられた。\nこれまでに集めた手がかりを総合して、教室番号を答えてください。\n【要確定：教室番号の答え】",
-      answers: ["0000"], inputMode: "text", maxLength: 10,
+      heading: "小岩さんに伝える場所",
+      images: [
+        { src: "images/sign1.webp", alt: "看板謎(A→1 B→2 C→0 のとき)" },
+        { src: "images/sign2.webp", alt: "看板謎(BEAM→????)" },
+      ],
+      prompt: "小岩さんから連絡が来た。\n「Aさんに会うには、どこへ行けばいいですか？」\nこれまでに集めた手がかりを総合して、小岩さんに向かってもらう教室番号を答えてください。",
+      answers: ["2010"], inputMode: "numeric", maxLength: 4,
+      wrongMessage: "小岩「本当にここでいいですか？」……もう一度よく考えてみよう。",
       hints: [
-        "「手がかり一覧」を開いて、今まで得た情報を見返してみよう。",
-        "特設交番で入手した情報がヒントになる。",
-        "答え：0000【要確定】",
+        "看板の謎：A・B・Cの「文字の形」に注目してみよう。",
+        "文字の中にある、閉じた「穴」の数を数えてみよう。Aは1つ、Bは2つ、Cは0。",
+        "答え：2010【案】",
       ],
       destination: null,
       nextTrue: "ending_true",
@@ -742,7 +812,7 @@ const CONFIG = {
     },
 
     // ============================================================
-    // エンディング
+    // エンディング → 解説場所(エピローグ)の案内
     // ============================================================
     {
       id: "ending_true",
@@ -751,10 +821,12 @@ const CONFIG = {
       badge: "TRUE END",
       heading: "真相へ",
       body: [
-        "教えられた教室で、あなたはAさんと依頼人の両方に会うことになった。",
-        "集めた手がかりを並べると、恐ろしい真実が見えてくる——依頼人こそが、Aさんの言う「ストーカー」だったのだ。",
+        "あなたが伝えた教室に、小岩さんは姿を現した。",
+        "集めた手がかりを並べると、恐ろしい真実が見えてくる——依頼人の小岩さんこそが、Aさんの日記にあった「ストーカー」だったのだ。",
+        "Aさんは、ストーカーから逃れるために自分の意思で身を隠していた。",
         "【要確定：真相エンディングの本文】",
       ],
+      epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
       next: null,
     },
     {
@@ -764,10 +836,11 @@ const CONFIG = {
       badge: "NORMAL END",
       heading: "とりあえずの解決",
       body: [
-        "教えられた教室で、あなたはAさんと再会することができた。",
-        "事件の裏にある本当の事情までは、たどり着けなかったようだ。",
+        "あなたが伝えた教室へ、小岩さんは向かっていった。",
+        "Aさんの行方はわかった——けれど、事件の裏にある本当の事情までは、たどり着けなかったようだ。",
         "【要確定：ノーマルエンディングの本文】",
       ],
+      epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
       next: null,
     },
   ],
@@ -1080,7 +1153,7 @@ const CONFIG = {
     }
     const isMe = m.from === "me";
     return el("div", { class: "chat-row " + (isMe ? "chat-row-me" : "chat-row-client") }, [
-      isMe ? null : el("div", { class: "chat-avatar" }, ["依"]),
+      isMe ? null : el("div", { class: "chat-avatar" + (CONFIG.clientNameFont === "meiryo" ? " font-meiryo" : "") }, [CONFIG.clientAvatar || "依"]),
       el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, [m.text]),
     ]);
   }
@@ -1111,6 +1184,16 @@ const CONFIG = {
     const frag = document.createDocumentFragment();
     frag.appendChild(img);
     frag.appendChild(cap);
+    return frag;
+  }
+
+  // 1つの謎で複数の画像を見せる場合は images: [{ src, alt }, ...] で渡せる(看板謎など)。
+  // images が無ければ従来どおり image / imageAlt の1枚だけを表示する。
+  function renderSceneImages(s) {
+    const list = s.images && s.images.length ? s.images : s.image ? [{ src: s.image, alt: s.imageAlt }] : [];
+    if (!list.length) return null;
+    const frag = document.createDocumentFragment();
+    list.forEach((im) => frag.appendChild(renderImageBlock(im.src, im.alt)));
     return frag;
   }
 
@@ -1176,7 +1259,7 @@ const CONFIG = {
         markSolved(s.id);
         onCorrect();
       } else {
-        feedback.textContent = "残念、違うようです。";
+        feedback.textContent = s.wrongMessage || "残念、違うようです。";
         feedback.className = "feedback ng";
         state.wrongCount[s.id] = (state.wrongCount[s.id] || 0) + 1;
         persist();
@@ -1251,7 +1334,7 @@ const CONFIG = {
     }
     // lockScreen(ロック画面の飾り)はあくまで演出。謎を解くための画像自体は
     // lockScreenの有無にかかわらず必ず表示する(でないと問題文の図が見えなくなる)。
-    const imgBlock = renderImageBlock(s.image, s.imageAlt);
+    const imgBlock = renderSceneImages(s);
     if (imgBlock) card.appendChild(imgBlock);
     card.appendChild(el("p", { class: "puzzle-prompt" + (s.font === "meiryo" ? " font-meiryo" : "") }, [s.prompt]));
 
@@ -1289,11 +1372,13 @@ const CONFIG = {
   function renderHub(s) {
     const solvedIds = s.puzzles.filter((id) => state.solved[id]);
     const allSolved = solvedIds.length === s.puzzles.length;
-    const grid = el("div", { class: "hub-grid" }, s.puzzles.map((id) => {
+    // optionalPuzzles(任意の謎)もカードとして並べるが、「次へ進む」の条件には含めない
+    const cardIds = s.puzzles.concat(s.optionalPuzzles || []);
+    const grid = el("div", { class: "hub-grid" }, cardIds.map((id) => {
       const p = scene(id);
       const isSolved = !!state.solved[id];
       return el("button", { class: "hub-card" + (isSolved ? " solved" : ""), onclick: () => goto(id) }, [
-        el("div", { class: "hub-num" }, [p && p.number ? "謎 " + p.number : ""]),
+        el("div", { class: "hub-num" }, [p && p.number ? "謎 " + p.number : "", p && p.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null]),
         el("div", { class: "hub-status" }, [isSolved ? "解決済み" : "未解決"]),
       ]);
     }));
@@ -1375,7 +1460,7 @@ const CONFIG = {
     const wrap = el("div", { class: "lion-reveal-wrap" }, [
       el("div", { class: "lead-text" }, ["問題の答えは、この解答欄に書き込まれた——"]),
       el("div", { class: "bracket-box" }, ["LION"]),
-      el("div", { class: "lead-text", style: "margin-top:26px;" }, ["そして、依頼人からのメモにはこう記されていた。"]),
+      el("div", { class: "lead-text", style: "margin-top:26px;" }, [s.revealLead || "そして、依頼人からのメモにはこう記されていた。"]),
       el("div", null, [
         "真相は",
         el("span", { class: "bracket-box rotated" }, ["LION"]),
@@ -1422,7 +1507,8 @@ const CONFIG = {
         feedback.textContent = "合言葉を確認しました。";
         feedback.className = "feedback ok";
         persist();
-        goto(s.next);
+        // nextTrue / nextNormal があれば、真相ルートかどうかで行き先を変える(無ければ next)
+        goto((truth ? s.nextTrue : s.nextNormal) || s.next);
       } else {
         feedback.textContent = "その合言葉は登録されていません。";
         feedback.className = "feedback ng";
@@ -1440,7 +1526,7 @@ const CONFIG = {
         state.truth = false;
         state.branchChoice = "pass";
         persist();
-        goto(s.next);
+        goto(s.nextNormal || s.next);
       } }, [s.passLabel || "どこにも辿り着けなかった"]),
     ]);
     const wrap = el("div", { class: "code-wrap" }, [card, passRow]);
@@ -1450,6 +1536,8 @@ const CONFIG = {
   function renderFinal(s) {
     const card = el("div", { class: "puzzle-card" }, []);
     card.appendChild(el("h2", { class: "puzzle-title" }, [s.heading]));
+    const imgBlock = renderSceneImages(s);
+    if (imgBlock) card.appendChild(imgBlock);
     card.appendChild(el("p", { class: "puzzle-prompt" }, [s.prompt]));
     card.appendChild(
       el("button", { class: "btn btn-secondary btn-block", style: "margin-bottom:14px;", onclick: openClueSheet }, [
@@ -1487,6 +1575,12 @@ const CONFIG = {
       el("div", { class: "ending-badge" }, [s.badge]),
       el("h2", null, [s.heading]),
       el("div", { class: "body" }, s.body.map((p) => el("p", { style: "margin:0 0 18px;" }, [p]))),
+      // エピローグ(解説)の場所への案内
+      s.epilogue ? el("div", { class: "move-dest", style: "margin-bottom:22px;" }, [
+        el("div", { class: "l" }, [s.epilogue.label || "解説の場所"]),
+        el("div", { class: "v" }, [s.epilogue.place]),
+        s.epilogue.note ? el("div", { class: "l", style: "margin-top:6px;" }, [s.epilogue.note]) : null,
+      ]) : null,
       el("div", { class: "ending-stats" }, [
         "所要時間: " + formatDuration(duration),
         el("br"),
@@ -1845,7 +1939,7 @@ const CONFIG = {
           const id = resetSelect.value;
           const s = scene(id);
           const idsToReset = [id];
-          if (s && s.type === "hub") idsToReset.push(...s.puzzles);
+          if (s && s.type === "hub") idsToReset.push(...s.puzzles, ...(s.optionalPuzzles || []));
           idsToReset.forEach((pid) => {
             if (state.solved[pid]) {
               delete state.solved[pid];
