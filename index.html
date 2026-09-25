@@ -599,9 +599,9 @@ const CONFIG = {
       number: 6,
       heading: "ポスターの謎(1枚目)",
       optional: true,
-      image: "images/puzzle6_poster.png",
-      imageAlt: "かるたサークルのポスター(1枚目)",
-      prompt: "【ここに問題文が入ります】(解かなくても進める任意の謎/募集中)\n※ポスターの制作者名は「刈田」と明記しておくこと【要確定】",
+      // 問題はポスター本体に載っているので、サイトには画像を出さず解答欄だけを置く
+      image: null,
+      prompt: "目の前のポスターに載っている謎を解いて、答えを入力してください。\n(解かなくても先へ進めます)",
       answers: ["こたえ"], inputMode: "text", maxLength: 20,
       hints: ["【ヒント1】", "答え：こたえ【要確定】"],
       reward: { label: "ポスターの制作者は「刈田」", detail: "ポスターの隅に、小さく制作者名が記されている。\n「制作：刈田」", font: "meiryo", kind: "person" },
@@ -752,9 +752,9 @@ const CONFIG = {
       number: 10,
       heading: "ポスターの謎(2枚目)",
       optional: false,
-      image: MAP_IMAGE,
-      imageAlt: "地図(ライオン/NO17の場所が書き込まれている)",
-      prompt: "ポスター(2枚目)には、刈田が作った謎が載っていた。\n【ここに問題文が入ります】\n※答えは必ず LION になる想定。地図には「ライオン」と「NO17」の場所がさりげなく書き込んである【要確定：ポスター2枚目の画像】",
+      // 問題はポスター本体に載っているので、サイトには画像を出さず解答欄だけを置く
+      image: null,
+      prompt: "ポスターには、刈田が作った謎が載っていた。\n謎を解いて、答えを入力してください。",
       answers: ["LION"], inputMode: "text", maxLength: 10,
       hints: ["【ヒント1】", "【ヒント2】", "答え：LION【確定】"],
       reward: null, // 通常の reward ではなく、solveScene 内で専用の反転演出を出す
