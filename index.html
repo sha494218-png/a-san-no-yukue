@@ -815,15 +815,18 @@ const CONFIG = {
       hints: ["【ヒント1】", "【ヒント2】", "答え：LION【確定】"],
       reward: null, // 通常の reward ではなく、solveScene 内で専用の反転演出を出す
       revealLead: "そして、ポスターの隅にはこう記されていた。",
+      // 手がかり一覧に残す内容。NO17 に気づくのは参加者自身なので、向きの違いなどには一切触れないこと
+      revealClue: { label: "ポスターの指示文「真相は LION にある」", detail: "" },
       destination: "かるたサークルのポスター(2枚目)前",
       next: "move_branch",
     },
     {
       id: "move_branch",
       type: "code",
-      heading: "移動④ 分岐地点",
-      body: "地図に書かれていた2つの場所——「ライオン」と「NO17」。\n正しいと思う方へ実際に移動し、現地のQRコードを読み取って、書かれている合言葉を入力してください。",
-      destination: "ライオン or NO17【要確定：設置場所】",
+      heading: "移動④ 真相のある場所へ",
+      // 【注意】行き先(ライオン/NO17)は参加者が自分で気づく構造。ここで場所の候補を示さないこと
+      body: "指示文が示す場所へ実際に移動してください。\n現地のQRコードを読み取って、書かれている合言葉を入力してください。",
+      destination: "指示文が示す場所",
       codeInputLabel: "現地の合言葉",
       passLabel: "どこにも辿り着けなかった(このまま進める)",
       nextTrue: "story_truth",
@@ -832,10 +835,10 @@ const CONFIG = {
     {
       id: "story_truth",
       type: "chat",
-      heading: "NO17の場所で",
+      heading: "たどり着いた場所で",
       messages: [
         { from: "system", text: "QRコードを読み取ると、事件の真相につながる情報が表示された" },
-        { from: "system", text: "【要確定：NO17で得られる情報の本文(依頼人の小岩さんがストーカーだと推理できる内容)】" },
+        { from: "system", text: "【要確定：ここで得られる情報の本文(依頼人の小岩さんがストーカーだと推理できる内容)】" },
         { from: "me", text: "……まさか。" },
       ],
       destination: null,
@@ -1523,7 +1526,7 @@ const CONFIG = {
         "にある。",
       ]),
       el("button", { class: "btn btn-block", style: "margin-top:30px;", onclick: () => {
-        addClue({ label: "「真相は〔LION〕にある」の指示文を入手", detail: "解答欄と指示文とで、かっこの向きが逆になっていることに気づいた。" }, s.heading);
+        addClue(s.revealClue || { label: "ポスターの指示文を入手" }, s.heading);
         goto(s.next);
       } }, ["次へ進む"]),
     ]);
