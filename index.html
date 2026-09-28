@@ -34,27 +34,41 @@
 
 /* ==========================================================
    デザイントークン
-   テーマ:「機密の捜査資料(CLASSIFIED)」。古びた紙の地、墨の黒、ハンコの赤の3色だけ。
+   テーマ:「色あせた手配書」。黄ばんだ羊皮紙に茶色いシミ・色ムラ・焼けた縁、
+   茶がかった墨の文字、かすれた赤いハンコ。
    英字の飾りラベルはタイプライター風の等幅書体、見出しは明朝、本文は読みやすさ優先でゴシック。
-   紙の質感は外部画像を使わず、CSS内のSVGノイズで出している。
+   紙の質感・シミ・かすれは外部画像を使わず、CSS内のSVGノイズとグラデーションで出している。
    新しい色・フォントを増やしたいときはここに追記する
    ========================================================== */
 :root{
-  --ink:#1c1a17;          /* 墨色(文字・ボタン・罫線) */
-  --ink-2:#3a352d;
-  --desk:#221e19;         /* 上下バー・ロック画面など「紙の外」の濃い色 */
-  --bg:#dcd0b4;           /* 画面の地(古びた紙) */
-  --paper:#f1e9d6;        /* 資料カードの紙(地より少し明るい) */
-  --paper-2:#e7dcc3;      /* ヒント・入力まわりの紙 */
-  --paper-hi:#fbf7ec;     /* 謎の画像・入力欄の下地 */
-  --stamp:#a3261c;        /* ハンコの赤(警告・不正解・スタンプ) */
-  --ok:#2f5d34;           /* 正解 */
-  --line:#3a342b;         /* 罫線 */
-  --line-soft:#b3a585;    /* 弱い罫線 */
-  --muted:#6b604d;        /* 補足の文字 */
-  --text-dark:#1c1a17;
-  --text-light:#efe6d2;
-  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .33 0 0 0 0 .26 0 0 0 0 .16 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --ink:#2e2115;          /* 茶がかった墨色(文字・ボタン・罫線) */
+  --ink-2:#4b3624;
+  --desk:#2a1d12;         /* 上下バー・ロック画面など「紙の外」の濃い色 */
+  --bg:#d6bd8f;           /* 画面の地(黄ばんだ羊皮紙) */
+  --paper:#e8d4aa;        /* 手配書の紙(地より少し明るい) */
+  --paper-2:#dcc393;      /* ヒント・入力まわりの紙 */
+  --paper-hi:#f1e2bf;     /* 謎の画像・入力欄の下地 */
+  --stamp:#962d1c;        /* 色あせたハンコの赤(警告・不正解・スタンプ) */
+  --ok:#3d5a2a;           /* 正解 */
+  --line:#4b3624;         /* 罫線 */
+  --line-soft:#b3935f;    /* 弱い罫線 */
+  --muted:#6e5537;        /* 補足の文字 */
+  --text-dark:#2e2115;
+  --text-light:#f0e2c2;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .24 0 0 0 0 .10 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* 大きな色ムラ(雲のようなシミ)。低周波のノイズで、場所によって紙の色が濃く/薄くなる */
+  --mottle:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .27 0 0 0 0 .09 0 0 1.1 0 -.45'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+  /* ぽつぽつとした茶色いシミと、日焼けで色が抜けた明るい部分 */
+  --stains:
+    radial-gradient(ellipse 22% 16% at 18% 22%, rgba(120,72,20,0.20), transparent 70%),
+    radial-gradient(ellipse 14% 10% at 82% 12%, rgba(110,64,18,0.22), transparent 70%),
+    radial-gradient(ellipse 30% 22% at 76% 78%, rgba(125,78,24,0.18), transparent 70%),
+    radial-gradient(ellipse 10% 8% at 40% 88%, rgba(100,58,16,0.25), transparent 70%),
+    radial-gradient(ellipse 35% 28% at 30% 60%, rgba(255,244,214,0.30), transparent 70%),
+    radial-gradient(ellipse 25% 20% at 65% 35%, rgba(255,244,214,0.25), transparent 70%);
+  /* ハンコのかすれ(インクが部分的に抜けるマスク) */
+  --wear:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --burn:inset 0 0 32px rgba(105,62,18,0.38), inset 0 0 6px rgba(80,45,10,0.35); /* 焼けて濃くなった縁 */
   --barcode:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 3px, var(--ink) 3px 4px, transparent 4px 7px, var(--ink) 7px 10px, transparent 10px 11px, var(--ink) 11px 12px, transparent 12px 15px);
   --type:"Courier New",Courier,"Nimbus Mono PS","Liberation Mono",monospace; /* タイプライター風(英字ラベル専用) */
   --mincho:"Noto Serif JP","Hiragino Mincho ProN","YuMincho","MS PMincho",serif;
@@ -442,6 +456,47 @@ input{font-family:inherit;}
 #staffpanel select,#staffpanel button{min-height:40px;font-size:13px;}
 #staffpanel pre{font-size:11px;background:var(--paper-2);border:1px solid var(--line-soft);padding:10px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;}
 .staff-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+/* ==========================================================
+   色あせ・色ムラ(手配書の質感)
+   紙の面には「細かいざらつき(noise) + 点々としたシミ(stains) + 大きな色ムラ(mottle)」を重ね、
+   縁は焼けたように濃くする(burn)。ハンコ類はインクがかすれたように一部を抜く(wear)。
+   謎の画像は乗算で重ね、白地が紙の色になじんで「紙に刷られている」ように見せる。
+   ========================================================== */
+body::before{
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(90,52,14,0.30) 100%),
+    var(--stains), var(--mottle);
+}
+.title-wrap,.puzzle-card,.hub-card,.move-dest,.sheet{
+  background-color:var(--paper);
+  background-image:var(--noise), var(--stains), var(--mottle);
+}
+.title-wrap{
+  background-image:
+    radial-gradient(circle at 50% 44%, transparent 0 112px, rgba(75,54,36,0.12) 112px 115px, transparent 115px 122px, rgba(75,54,36,0.12) 122px 124px, transparent 124px),
+    var(--noise), var(--stains), var(--mottle);
+  box-shadow:var(--burn), 0 6px 18px rgba(50,28,6,0.3);
+  outline:1px solid var(--line);outline-offset:-7px;
+}
+.puzzle-card{box-shadow:var(--burn), 0 4px 14px rgba(50,28,6,0.28);outline:1px solid var(--line-soft);outline-offset:-6px;}
+.hub-card{box-shadow:inset 0 0 18px rgba(105,62,18,0.32), 0 3px 10px rgba(50,28,6,0.22);}
+.move-dest{background-color:var(--paper-hi);box-shadow:inset 0 0 20px rgba(105,62,18,0.28);outline:1px solid var(--line-soft);outline-offset:-5px;}
+.clue-item{background-image:var(--noise), var(--mottle);}
+.diary-box{background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line-soft) 31px, var(--line-soft) 32px), var(--stains);box-shadow:inset 0 0 22px rgba(105,62,18,0.28), 0 4px 14px rgba(50,28,6,0.22);}
+/* 謎の画像は紙に刷られたように(白地が紙の色になる) */
+.puzzle-image-thumb,.hub-card .hub-thumb,.clue-item img{mix-blend-mode:multiply;background:transparent;}
+.puzzle-image-thumb{border-color:var(--line-soft);}
+/* ハンコ・赤い刷り文字のかすれ */
+.title-wrap::after,.hub-card.solved::after,.ending-badge,.puzzle-card::before,.title-wrap::before,.hub-wrap h2::before{
+  -webkit-mask-image:var(--wear);mask-image:var(--wear);
+  -webkit-mask-size:120px 120px;mask-size:120px 120px;
+  mix-blend-mode:multiply;
+}
+.hub-card.solved::after{background:transparent;}
+.puzzle-card::after{opacity:0.65;}
+/* 上下バーにも少しだけざらつき */
+#topbar,#bottombar{background-image:var(--noise);}
 </style>
 </head>
 <body>
