@@ -303,6 +303,9 @@ input{font-family:inherit;}
 .move-dest .l{font-size:11px;font-weight:700;letter-spacing:0.12em;color:var(--stamp);}
 .move-dest .l:first-child::before{content:"DESTINATION / ";font-family:var(--type);}
 .move-dest .v{font-family:var(--mincho);font-size:20px;font-weight:800;margin-top:4px;}
+/* 到着確認(現地の合言葉の入力欄) */
+.arrival-check{margin-top:4px;}
+.arrival-label{font-size:13px;font-weight:800;margin-bottom:6px;}
 
 /* ---------- 合言葉(分岐)シーン ---------- */
 .code-wrap .puzzle-card{margin-bottom:14px;}
@@ -712,9 +715,13 @@ const CONFIG = {
       type: "move",
       icon: "🚓",
       heading: "移動② 特設交番へ",
-      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)",
+      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)\n交番に着いたら、そこで伝えられる合言葉を入力してください。",
       destination: "特設交番【要確定：設置場所】",
-      buttonLabel: "交番に入れた(次へ)",
+      // 到着の証明に使う合言葉(交番で掲示する/警官役が伝える)。
+      // arrivalCodes があると「着いた」ボタンの代わりに入力欄が出て、一致しないと先へ進めない。
+      // 【仮】本番前に、推測されにくい言葉へ差し替えること
+      arrivalCodes: ["到着"],
+      arrivalLabel: "交番の合言葉",
       next: "story_koban",
     },
 
@@ -1532,9 +1539,34 @@ const CONFIG = {
         el("div", { class: "l" }, ["目的地"]),
         el("div", { class: "v" }, [s.destination]),
       ]) : null,
-      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, [s.buttonLabel || "次へ"]),
+      s.arrivalCodes && !state.solved[s.id]
+        ? renderArrivalCheck(s)
+        : el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, [s.arrivalCodes ? "到着確認済み(次へ)" : s.buttonLabel || "次へ"]),
     ]);
     $app.appendChild(wrap);
+  }
+
+  // 現地に着いたことを、現地で伝えられる合言葉の入力で確認する(移動シーン用)。
+  // 一度確認できたら state.solved に記録し、戻ってきても再入力はいらない(解いた謎の数には数えない)。
+  function renderArrivalCheck(s) {
+    const feedback = el("div", { class: "feedback" }, [""]);
+    const input = el("input", { type: "text", placeholder: s.arrivalLabel || "現地の合言葉", "aria-label": s.arrivalLabel || "現地の合言葉" });
+    const submit = () => {
+      if (matchAny(input.value, s.arrivalCodes)) {
+        state.solved[s.id] = true;
+        persist();
+        goto(s.next);
+      } else {
+        feedback.textContent = "合言葉が違うようです。現地でもう一度確かめてください。";
+        feedback.className = "feedback ng";
+      }
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    return el("div", { class: "arrival-check" }, [
+      el("div", { class: "arrival-label" }, [s.arrivalLabel || "現地の合言葉"]),
+      el("div", { class: "answer-row" }, [input, el("button", { class: "btn", onclick: submit }, ["確認する"])]),
+      feedback,
+    ]);
   }
 
   function renderCode(s) {
@@ -1973,7 +2005,7 @@ const CONFIG = {
     panel.appendChild(jumpSection);
 
     // 謎の解答状態だけをリセット(デバッグ用。他の進捗・手がかりはそのまま)
-    const resettableIds = CONFIG.scenes.filter((s) => s.answers || s.type === "hub").map((s) => s.id);
+    const resettableIds = CONFIG.scenes.filter((s) => s.answers || s.arrivalCodes || s.type === "hub").map((s) => s.id);
     const resetSelect = el("select", null, resettableIds.map((id) => {
       const s = scene(id);
       const label = id + (s.type === "puzzle" || s.type === "final" ? " (" + s.heading + ")" : s.type === "hub" ? " (ハブ)" : "") + (state.solved[id] ? " ✓解答済み" : "");
@@ -1992,7 +2024,8 @@ const CONFIG = {
           idsToReset.forEach((pid) => {
             if (state.solved[pid]) {
               delete state.solved[pid];
-              state.solvedCount = Math.max(0, (state.solvedCount || 0) - 1);
+              // 到着確認は「解いた謎の数」に数えていないので、数は減らさない
+              if (!(scene(pid) && scene(pid).arrivalCodes)) state.solvedCount = Math.max(0, (state.solvedCount || 0) - 1);
             }
             delete state.hintsOpened[pid];
             delete state.wrongCount[pid];
@@ -2015,6 +2048,13 @@ const CONFIG = {
           el("td", null, [s.heading || s.id]),
           el("td", null, [s.answers.join(" / ")]),
           el("td", null, [""]),
+        ]));
+      }
+      if (s.arrivalCodes) {
+        table.appendChild(el("tr", null, [
+          el("td", null, ["到着確認: " + (s.destination || s.heading)]),
+          el("td", null, [s.arrivalCodes.join(" / ")]),
+          el("td", null, ["現地で伝える合言葉"]),
         ]));
       }
     });
