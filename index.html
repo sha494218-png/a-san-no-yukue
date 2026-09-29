@@ -773,7 +773,7 @@ const CONFIG = {
       type: "move",
       icon: "🚓",
       heading: "移動 特設交番へ",
-      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)",
+      body: "特設交番へ移動してください。",
       destination: "特設交番【要確定：設置場所】",
       buttonLabel: "交番に入れた(次へ)",
       next: "story_koban",
@@ -788,7 +788,7 @@ const CONFIG = {
       heading: "特設交番にて",
       messages: [
         { from: "system", text: "名刺を見せて敬礼すると、交番の中に通された" },
-        { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(QRコードが2枚。1枚はパスワード付きのファイル)" },
+        { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(パスワード付きのファイルと、QRコード1枚)" },
         { from: "me", text: "刈田さんが預けていた物……。中を確認してみよう。" },
       ],
       destination: "特設交番",
@@ -801,7 +801,7 @@ const CONFIG = {
       optional: false,
       image: "images/file_password.webp",
       imageAlt: "色分けされたマス目の謎",
-      prompt: "刈田さんが預けていたQRコードを読み込むと、パスワード付きのファイルが出てきた。\n色の名前と、黒い線が通っている位置に注目してください。",
+      prompt: "刈田さんが預けていたファイルには、パスワードがかかっていた。\n色の名前と、黒い線が通っている位置に注目してください。",
       answers: ["あしどり"], inputMode: "text", maxLength: 10,
       hints: [
         "赤色は「あか」、緑色は「みどり」。では、線が通っている白い部分は？",
