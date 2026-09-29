@@ -68,7 +68,7 @@
     radial-gradient(ellipse 25% 20% at 65% 35%, rgba(255,244,214,0.25), transparent 70%);
   /* ハンコのかすれ(インクが部分的に抜けるマスク) */
   --wear:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
-  --burn:inset 0 0 32px rgba(105,62,18,0.38), inset 0 0 6px rgba(80,45,10,0.35); /* 焼けて濃くなった縁 */
+  --burn:inset 0 0 18px rgba(105,62,18,0.22), inset 0 0 3px rgba(80,45,10,0.25); /* 焼けて濃くなった縁 */
   --barcode:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 3px, var(--ink) 3px 4px, transparent 4px 7px, var(--ink) 7px 10px, transparent 10px 11px, var(--ink) 11px 12px, transparent 12px 15px);
   --type:"Courier New",Courier,"Nimbus Mono PS","Liberation Mono",monospace; /* タイプライター風(英字ラベル専用) */
   --mincho:"Noto Serif JP","Hiragino Mincho ProN","YuMincho","MS PMincho",serif;
@@ -463,27 +463,25 @@ input{font-family:inherit;}
    縁は焼けたように濃くする(burn)。ハンコ類はインクがかすれたように一部を抜く(wear)。
    謎の画像は乗算で重ね、白地が紙の色になじんで「紙に刷られている」ように見せる。
    ========================================================== */
-body::before{
-  background:
-    radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(90,52,14,0.30) 100%),
-    var(--stains), var(--mottle);
-}
+/* 画面の背景は視認性を優先して単色(グラデーション・シミは重ねない) */
+body{background-image:none;}
+body::before{display:none;}
 .title-wrap,.puzzle-card,.hub-card,.move-dest,.sheet{
   background-color:var(--paper);
-  background-image:var(--noise), var(--stains), var(--mottle);
+  background-image:var(--noise);
 }
 .title-wrap{
   background-image:
     radial-gradient(circle at 50% 44%, transparent 0 112px, rgba(75,54,36,0.12) 112px 115px, transparent 115px 122px, rgba(75,54,36,0.12) 122px 124px, transparent 124px),
-    var(--noise), var(--stains), var(--mottle);
+    var(--noise);
   box-shadow:var(--burn), 0 6px 18px rgba(50,28,6,0.3);
   outline:1px solid var(--line);outline-offset:-7px;
 }
 .puzzle-card{box-shadow:var(--burn), 0 4px 14px rgba(50,28,6,0.28);outline:1px solid var(--line-soft);outline-offset:-6px;}
 .hub-card{box-shadow:inset 0 0 18px rgba(105,62,18,0.32), 0 3px 10px rgba(50,28,6,0.22);}
 .move-dest{background-color:var(--paper-hi);box-shadow:inset 0 0 20px rgba(105,62,18,0.28);outline:1px solid var(--line-soft);outline-offset:-5px;}
-.clue-item{background-image:var(--noise), var(--mottle);}
-.diary-box{background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line-soft) 31px, var(--line-soft) 32px), var(--stains);box-shadow:inset 0 0 22px rgba(105,62,18,0.28), 0 4px 14px rgba(50,28,6,0.22);}
+.clue-item{background-image:var(--noise);}
+.diary-box{background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line-soft) 31px, var(--line-soft) 32px);box-shadow:inset 0 0 22px rgba(105,62,18,0.28), 0 4px 14px rgba(50,28,6,0.22);}
 /* 謎の画像は紙に刷られたように(白地が紙の色になる) */
 .puzzle-image-thumb,.hub-card .hub-thumb,.clue-item img{mix-blend-mode:multiply;background:transparent;}
 .puzzle-image-thumb{border-color:var(--line-soft);}
@@ -497,6 +495,24 @@ body::before{
 .puzzle-card::after{opacity:0.65;}
 /* 上下バーにも少しだけざらつき */
 #topbar,#bottombar{background-image:var(--noise);}
+
+/* ---------- 最終画面の確認(送信前の「本当にここでいいですか？」) ---------- */
+.notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
+.confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
+.confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
+.confirm-actions{display:flex;gap:8px;}
+.confirm-actions .btn{flex:1;padding:0 8px;}
+
+/* ---------- QRコードの読み込み欄(qrGate) ---------- */
+.qr-gate{margin-top:16px;padding:16px 14px;border:1.5px dashed var(--line);background:var(--paper-hi);}
+.qr-gate-title{font-weight:800;font-size:15px;margin-bottom:10px;}
+.qr-gate-note{font-size:12px;line-height:1.7;color:var(--muted);white-space:pre-line;margin:10px 0;}
+/* ページ内カメラ(BarcodeDetector対応端末のみ) */
+.qr-scanner{position:fixed;inset:0;z-index:80;background:#000;display:flex;align-items:center;justify-content:center;}
+.qr-scanner video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.qr-scanner-frame{position:relative;width:64vw;max-width:280px;aspect-ratio:1;border:3px solid rgba(255,255,255,0.9);box-shadow:0 0 0 100vmax rgba(0,0,0,0.45);}
+.qr-scanner-hint{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 60px);text-align:center;color:#fff;font-size:14px;font-weight:700;}
+.qr-scanner-close{position:absolute;top:calc(var(--safe-t) + 12px);right:calc(var(--safe-r) + 12px);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.2);color:#fff;font-size:22px;}
 </style>
 </head>
 <body>
@@ -552,7 +568,7 @@ function gridCellRect(n) {
 // 【要記入】設置場所が未確定のため、勝手に埋めていません。場所が決まり次第、
 // 該当するマス番号(1〜18)に書き換えてください(nullのままなら軌跡には出ません)。
 const SCENE_GRID_CELL = {
-  puzzle_koban: null, // 特設交番
+  puzzle_board: null, // 掲示板
 };
 // LION謎の分岐先だけは、地図の描き込み(14=ライオン, 17=NO17)から読み取れるため確定済み。
 // 【要確定】この読み取りが実際の設置場所と合っているか、運営で必ず確認すること(README参照)。
@@ -560,18 +576,16 @@ const BRANCH_GRID_CELL = { LIONCODE: 14, NO17CODE: 17 };
 
 const CONFIG = {
   gameTitle: "ある人の失踪　隠された真相からの脱出", // シナリオ(Word)のヘッダーのタイトル
-  mapImage: MAP_IMAGE, // 下部バーの「地図」ボタンが開く画像
+  mapImage: MAP_IMAGE,
+  showMapButton: false, // 下部バーの「地図」ボタン(地図は紙で配るため非表示)
 
   // 依頼人(小岩さん)のトーク画面のアイコン。
   // 流れ資料より「依頼人と刈田の名前はアナグラム謎と同じフォント(メイリオ)で書く」ため meiryo を指定。
   clientAvatar: "小",
   clientNameFont: "meiryo",
 
-  // ---- 現地の合言葉(本番投入前に必ず差し替えること。README参照) ----
-  branchCodes: {
-    NO17CODE: { match: "NO17CODE", truth: true },   // 正しい場所(NO17)の合言葉
-    LIONCODE: { match: "LIONCODE", truth: false },  // 空振りの場所(ライオン)の合言葉
-  },
+  // 分岐の合言葉は廃止(真相の場所は参加者が現地で読み取り、最後の「小岩さんに伝える場所」で判定する)
+  branchCodes: {},
 
   // シーン構成は シナリオ/Aさんの行方シナリオ.docx(2026-09-25版)に準拠。
   // 物語の文言は「案」を含むので、【要確定】の箇所は運営で確定すること。
@@ -628,16 +642,17 @@ const CONFIG = {
       ],
       reward: [
         { label: "依頼人の小岩さんと連絡が取れる", detail: "パソコンのロックが解除され、小岩さんとやり取りできるようになった。", kind: "person" },
-        { label: "学内マップを入手", detail: "小岩さんのパネルから学内マップを受け取った。マップの裏面には人物紹介が載っている。以後は下部バーの「地図」からいつでも見返せる。", kind: "map", image: MAP_IMAGE },
+        { label: "学内マップを入手", detail: "小岩さんのパネルから学内マップを受け取った。マップの裏面には人物紹介が載っている。", kind: "map" },
       ],
       destination: null,
       next: "story_map_intro",
     },
 
     // ============================================================
-    // 謎2〜5: マップ謎(4問・順不同) — 4つの場所を巡る
+    // マップ謎(4問・順不同)
     // 4問はどの順番でも解けるハブ画面(map_hub)から出入りする。
-    // 謎6(ポスター1枚目)は現地のポスターのみで完結するため、サイトには解答欄を置かない。
+    // 問題は画像だけで伝わるので、各謎の問題文(prompt)は空にしてある。
+    // ポスター1枚目は現地のポスターのみで完結するため、サイトには解答欄を置かない。
     // ============================================================
     {
       id: "story_map_intro",
@@ -650,8 +665,8 @@ const CONFIG = {
         { from: "client", text: "その地図なら、わたしのパネルのところに置いてあります。受け取ってください。" },
         { from: "system", text: "小岩さんのパネルから、学内マップを受け取った(裏面には人物紹介)" },
         { from: "system", text: "マップと一緒に、謎と指示書が出てきた" },
-        { from: "system", text: "指示書「四つの場所を巡ったのち、その中心へ向かえ」" },
-        { from: "me", text: "マップの謎を解いて、4つの場所を回ってみます。" },
+        { from: "system", text: "指示書「謎を解き、指示された場所に行け」" },
+        { from: "me", text: "マップの謎を解いてみます。" },
       ],
       destination: null,
       next: "map_hub",
@@ -660,17 +675,17 @@ const CONFIG = {
       id: "map_hub",
       type: "hub",
       heading: "マップの謎",
-      body: "マップと一緒に出てきた4つの謎。答えは地図上の場所を示している。\n解けたら、その場所へ実際に行って情報を確かめよう。どれから解いても構わない。",
+      body: "謎を解き、指示された場所に行け。\n(どの謎から解いても構わない)",
       puzzles: ["puzzle_map1", "puzzle_map2", "puzzle_map3", "puzzle_map4"],
-      reward: { label: "4つの場所を巡り終えた", detail: "指示書「四つの場所を巡ったのち、その中心へ向かえ」", kind: "doc" },
-      destination: "マップ謎の答えが示す4つの場所",
-      next: "story_center",
+      reward: { label: "4つの場所を巡り終えた", detail: "マップの謎が指示する4つの場所を、すべて巡った。", kind: "doc" },
+      destination: "マップの謎が指示する場所",
+      next: "puzzle_board",
     },
     // 【要確定】どの謎の場所でどの情報が得られるかの対応は、シナリオの記載順に仮で割り当てています。
     {
       id: "puzzle_map1", type: "puzzle", heading: "マップ謎", optional: false,
       image: "images/map_apple.webp", imageAlt: "反省+囲碁+理科の謎",
-      prompt: "画像の式を解いて、答えとなる言葉を入力してください。",
+      prompt: "",
       answers: ["りんご"], inputMode: "text", maxLength: 20,
       hints: [
         "3つの言葉を、それぞれひらがなで書き出してみよう。",
@@ -683,7 +698,7 @@ const CONFIG = {
     {
       id: "puzzle_map2", type: "puzzle", heading: "マップ謎", optional: false,
       image: "images/map_rabbit.webp", imageAlt: "うえき=くさばな のマス目の謎",
-      prompt: "マス目から法則を見つけて「したみ」の答えを求めてください。",
+      prompt: "",
       answers: ["うさぎ"], inputMode: "text", maxLength: 20,
       hints: [
         "「うえき」は「上・き」と読めます。「き」の文字を探してみよう。",
@@ -696,7 +711,7 @@ const CONFIG = {
     {
       id: "puzzle_map3", type: "puzzle", heading: "マップ謎", optional: false,
       image: "images/map_gorilla.webp", imageAlt: "直線でできた図形の謎",
-      prompt: "上の例のように、直線でできた図形が表す言葉を考えてください。",
+      prompt: "",
       answers: ["ゴリラ"], inputMode: "text", maxLength: 20,
       hints: [
         "直線だけでできた文字だと思って眺めてみてください。",
@@ -709,7 +724,7 @@ const CONFIG = {
     {
       id: "puzzle_map4", type: "puzzle", heading: "マップ謎", optional: false,
       image: "images/map_bird.webp", imageAlt: "重なった図形の謎",
-      prompt: "この2つの図形は、実は2種類の文字が重なって描かれています。それぞれ分けて読み取ってください。",
+      prompt: "",
       answers: ["トリ"], inputMode: "text", maxLength: 20,
       hints: [
         "1本1本の線をたどって、2種類の文字を探してみましょう。",
@@ -721,67 +736,40 @@ const CONFIG = {
     },
 
     // ============================================================
-    // 4つの場所の中心へ → 謎7: 交番の場所(掲示板の謎)
+    // 掲示板の謎(看板謎1 + 掲示板に貼られた謎を組み合わせる) → 特設交番
     // ============================================================
     {
-      id: "story_center",
-      type: "chat",
-      heading: "4つの場所を巡って",
-      messages: [
-        { from: "system", text: "4つの場所を巡り終えた" },
-        { from: "system", text: "アナグラムの情報をもとに、マップ裏の人物紹介の穴あき部分を埋めると……" },
-        { from: "system", text: "「中心へ向かえ」という指示が浮かび上がった" },
-        { from: "me", text: "4つの場所の中心……そこに何かあるはずです。" },
-        { from: "client", text: "よろしくお願いします。何かわかったら教えてください。" },
-      ],
-      destination: null,
-      next: "move_center",
-    },
-    {
-      id: "move_center",
-      type: "move",
-      icon: "🚶",
-      heading: "移動① 4つの場所の中心へ",
-      body: "地図の上で、4つの場所の中心にあたる所へ移動してください。\n掲示板に謎が貼り付けてあります。着いたら次へ進んでください。",
-      destination: "4つの場所の中心(掲示板)【要確定：設置場所】",
-      buttonLabel: "着いた(次へ)",
-      next: "puzzle_koban",
-    },
-    {
-      id: "puzzle_koban",
+      id: "puzzle_board",
       type: "puzzle",
-      heading: "交番の場所",
+      heading: "掲示板の謎",
       optional: false,
-      image: "images/koban.webp",
-      imageAlt: "交番の場所謎の画像",
-      prompt: "掲示板に貼られていた、交番の場所についての謎。\n画像の指示にしたがって、3文字の言葉を答えてください。",
-      answers: ["たすく"], inputMode: "text", maxLength: 10,
+      image: "images/sign1.webp",
+      imageAlt: "看板謎(A→1 B→2 C→0 のとき)",
+      prompt: "掲示板の謎と組み合わせて解け。",
+      // 【要確定】掲示板側の謎が BEAM(看板謎2と同じ)なら答えは 2010。掲示板の謎が決まったら合わせること
+      answers: ["2010"], inputMode: "numeric", maxLength: 4,
       hints: [
-        "文字を1つずつ抜き出すのではなく、ある言葉をまるごと抜き出します。",
-        "「6文字の鳥」と説明されている部分自体を、そのままひらがなで文字列の中から探してみてください。",
-        "答え：たすく",
+        "A・B・Cの「文字の形」に注目してみよう。",
+        "文字の中にある、閉じた「穴」の数を数えよう(Aは1つ、Bは2つ、Cは0)。掲示板の言葉にも同じ法則を当てはめてみよう。",
+        "答え：2010【要確定】",
       ],
       reward: { label: "特設交番の場所が判明", detail: "学祭にあたって特設された交番の場所がわかった。(この場所は小岩さんには伝えていない)", kind: "place" },
-      destination: "4つの場所の中心(掲示板)",
+      destination: "掲示板【要確定：設置場所】",
       next: "move_koban",
     },
     {
       id: "move_koban",
       type: "move",
       icon: "🚓",
-      heading: "移動② 特設交番へ",
-      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)\n交番に着いたら、そこで伝えられる合言葉を入力してください。",
+      heading: "移動 特設交番へ",
+      body: "特設交番へ移動してください。\n中に入るには、受付でもらった名刺を見せて敬礼すること。(ミエダイ探偵の情報より)",
       destination: "特設交番【要確定：設置場所】",
-      // 到着の証明に使う合言葉(交番で掲示する/警官役が伝える)。
-      // arrivalCodes があると「着いた」ボタンの代わりに入力欄が出て、一致しないと先へ進めない。
-      // 【仮】本番前に、推測されにくい言葉へ差し替えること
-      arrivalCodes: ["到着"],
-      arrivalLabel: "交番の合言葉",
+      buttonLabel: "交番に入れた(次へ)",
       next: "story_koban",
     },
 
     // ============================================================
-    // 特設交番 — 刈田が預けた物 / 謎8: アナグラム(任意) / 謎9: ファイル
+    // 特設交番 — 刈田が預けた物 → ファイルのパスワード → QRコード → たすくの謎
     // ============================================================
     {
       id: "story_koban",
@@ -790,24 +778,8 @@ const CONFIG = {
       messages: [
         { from: "system", text: "名刺を見せて敬礼すると、交番の中に通された" },
         { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(ファイルのQRコード)" },
-        { from: "system", text: "あわせて「捜査協力のお願い」と書かれた紙(QRコード)も渡された" },
         { from: "me", text: "刈田さんが預けていた物……。中を確認してみよう。" },
       ],
-      destination: "特設交番",
-      next: "puzzle_anagram",
-    },
-    {
-      id: "puzzle_anagram",
-      type: "puzzle",
-      heading: "捜査協力の謎",
-      optional: true,
-      font: "meiryo",
-      image: "images/puzzle8_anagram.png",
-      imageAlt: "アナグラム謎の画像",
-      prompt: "「捜査協力のお願い」のQRコードを読み込むと、この謎が出てきた。\n【ここに問題文が入ります】(文字を並べ替えて答えるアナグラム謎/募集中)\n※このフォント(メイリオ)自体が「並べ替え」のヒントになっている【要確定】",
-      answers: ["こたえ"], inputMode: "text", maxLength: 20,
-      hints: ["【ヒント1】", "答え：こたえ【要確定】"],
-      reward: { label: "指名手配書の一覧を閲覧", detail: "捜査協力のお礼に、指名手配書の一覧を見せてもらった。\n一覧の中には「河合 奈恵子(かわい なえこ)」という名前も載っている。", font: "meiryo", kind: "doc" },
       destination: "特設交番",
       next: "puzzle_file",
     },
@@ -838,91 +810,89 @@ const CONFIG = {
           "誰かに見られている、跡をつけられている。そんな気がしてならない。",
           "しばらく、自分の意思で身を隠そうと思う。",
         ],
-        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】",
+        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】\n\nファイルには、もう1つQRコードが添えられていた。",
       },
+      // 解いた後、この画面に「QRコードを読み込む」欄を出す。読み込むと target の謎へ進む。
+      // QRコードの中身は「サイトのURL + ?qr=token」。カメラが使えない人向けに、token を手入力しても進める。
+      // 【仮】token は本番前に推測されにくい文字列へ差し替え、同じ値でQRコードを作り直すこと
+      qrGate: {
+        token: "tsk-8q3m",
+        target: "puzzle_task",
+        label: "添えられていたQRコードを読み込む",
+        note: "QRコードの下に書かれている英数字を入力しても進めます。",
+      },
+      destination: "特設交番",
+      next: "puzzle_task",
+    },
+    {
+      id: "puzzle_task",
+      type: "puzzle",
+      heading: "QRコードの謎",
+      optional: false,
+      image: "images/koban.webp",
+      imageAlt: "文字列から言葉を抜き出す謎",
+      prompt: "QRコードを読み込むと、この謎が表示された。\n画像の指示にしたがって、3文字の言葉を答えてください。",
+      answers: ["たすく"], inputMode: "text", maxLength: 10,
+      hints: [
+        "文字を1つずつ抜き出すのではなく、ある言葉をまるごと抜き出します。",
+        "「6文字の鳥」と説明されている部分自体を、そのままひらがなで文字列の中から探してみてください。",
+        "答え：たすく",
+      ],
+      reward: { label: "QRコードの謎の答え「たすく」", detail: "【要確定：この答えが示すもの】", kind: "doc" },
       destination: "特設交番",
       next: "move_poster2",
     },
 
     // ============================================================
-    // 謎10: LION謎(ポスター2枚目・このゲームの核心)
+    // ポスター(2枚目) → ポスターに示された場所へ(NO17に気づくのは参加者自身)
     // ============================================================
     {
       id: "move_poster2",
       type: "move",
       icon: "🚶",
-      heading: "移動③ かるたサークルのポスター(2枚目)へ",
+      heading: "移動 かるたサークルのポスター(2枚目)へ",
       body: "日記に書かれていた場所へ移動してください。\nポスターの前に着いたら、次へ進んでください。",
       destination: "かるたサークルのポスター(2枚目)前【要確定：設置場所】",
       buttonLabel: "着いた(次へ)",
-      next: "puzzle_lion",
+      next: "move_truth",
     },
     {
-      id: "puzzle_lion",
-      type: "puzzle",
-      lionSpecial: true,
-      heading: "ポスターの謎(2枚目)",
-      optional: false,
-      // 問題はポスター本体に載っているので、サイトには画像を出さず解答欄だけを置く
-      image: null,
-      prompt: "ポスターには、刈田が作った謎が載っていた。\n謎を解いて、答えを入力してください。",
-      answers: ["LION"], inputMode: "text", maxLength: 10,
-      hints: ["【ヒント1】", "【ヒント2】", "答え：LION【確定】"],
-      reward: null, // 通常の reward ではなく、solveScene 内で専用の反転演出を出す
-      revealLead: "そして、ポスターの隅にはこう記されていた。",
-      // 手がかり一覧に残す内容。NO17 に気づくのは参加者自身なので、向きの違いなどには一切触れないこと
-      revealClue: { label: "ポスターの指示文「真相は LION にある」", detail: "" },
-      destination: "かるたサークルのポスター(2枚目)前",
-      next: "move_branch",
-    },
-    {
-      id: "move_branch",
-      type: "code",
-      heading: "移動④ 真相のある場所へ",
-      // 【注意】行き先(ライオン/NO17)は参加者が自分で気づく構造。ここで場所の候補を示さないこと
-      body: "指示文が示す場所へ実際に移動してください。\n現地のQRコードを読み取って、書かれている合言葉を入力してください。",
-      destination: "指示文が示す場所",
-      codeInputLabel: "現地の合言葉",
-      passLabel: "どこにも辿り着けなかった(このまま進める)",
-      nextTrue: "story_truth",
-      nextNormal: "puzzle_final",
-    },
-    {
-      id: "story_truth",
-      type: "chat",
-      heading: "たどり着いた場所で",
-      messages: [
-        { from: "system", text: "QRコードを読み取ると、事件の真相につながる情報が表示された" },
-        { from: "system", text: "【要確定：ここで得られる情報の本文(依頼人の小岩さんがストーカーだと推理できる内容)】" },
-        { from: "me", text: "……まさか。" },
-      ],
-      destination: null,
+      id: "move_truth",
+      type: "move",
+      icon: "🚶",
+      heading: "ポスターに示された場所へ",
+      // 【注意】行き先は参加者がポスターから自分で読み取る構造。ここで場所の候補を示さないこと
+      body: "ポスターに示された場所へ向かえ。\n到着したら「到着」を押してください。",
+      destination: "ポスターに示された場所",
+      buttonLabel: "到着",
       next: "puzzle_final",
     },
 
     // ============================================================
-    // 最終謎: 小岩さんに向かうべき場所を伝える(看板謎)
-    // 【案】看板謎(答え 2010・文字の穴の数)を教室の指定に使う想定で接続しています。
+    // 最終: 小岩さんに向かうべき場所を伝える
+    // 交番・警察署など警察に関係する言葉ならクリア。それ以外は確認を挟み、それでも送ればバッドエンド。
     // ============================================================
     {
       id: "puzzle_final",
       type: "final",
       heading: "小岩さんに伝える場所",
-      images: [
-        { src: "images/sign1.webp", alt: "看板謎(A→1 B→2 C→0 のとき)" },
-        { src: "images/sign2.webp", alt: "看板謎(BEAM→????)" },
-      ],
-      prompt: "小岩さんから連絡が来た。\n「Aさんに会うには、どこへ行けばいいですか？」\nこれまでに集めた手がかりを総合して、小岩さんに向かってもらう教室番号を答えてください。",
-      answers: ["2010"], inputMode: "numeric", maxLength: 4,
-      wrongMessage: "小岩「本当にここでいいですか？」……もう一度よく考えてみよう。",
+      prompt: "小岩さんから連絡が来た。\n「Aさんに会うには、どこへ行けばいいですか？」\n小岩さんに向かってもらう場所を入力して、送信してください。",
+      inputMode: "text", maxLength: 20,
+      // 入力にこれらの言葉が含まれていればクリア(表記ゆれは norm() で吸収。ひらがなの読みも入れておく)
+      clearKeywords: ["交番", "警察", "派出所", "駐在所", "警視庁", "ポリス", "police", "こうばん", "けいさつ", "はしゅつじょ", "ちゅうざいしょ"],
+      answers: ["交番", "警察署"], // スタッフモードの答え一覧に出す代表例(判定は clearKeywords で行う)
+      submitLabel: "送信する",
+      confirmMessage: "本当にこの場所を小岩さんに伝えますか？",
+      confirmSendLabel: "このまま送信",
+      confirmBackLabel: "もう一度考える",
       hints: [
-        "看板の謎：A・B・Cの「文字の形」に注目してみよう。",
-        "文字の中にある、閉じた「穴」の数を数えてみよう。Aは1つ、Bは2つ、Cは0。",
-        "答え：2010【案】",
+        "これまでの手がかりを見返してみよう。小岩さんは、本当に信用できる人物だろうか？",
+        "Aさんを守るために、小岩さんをどこへ向かわせるべきだろう。",
+        "答え：交番(警察署など、警察に関係する場所)",
       ],
       destination: null,
-      nextTrue: "ending_true",
-      nextNormal: "ending_normal",
+      nextClear: "ending_true",
+      nextBad: "ending_bad",
     },
 
     // ============================================================
@@ -932,27 +902,27 @@ const CONFIG = {
       id: "ending_true",
       type: "ending",
       variant: "true",
-      badge: "TRUE END",
+      badge: "CLEAR",
       heading: "真相へ",
       body: [
-        "あなたが伝えた教室に、小岩さんは姿を現した。",
-        "集めた手がかりを並べると、恐ろしい真実が見えてくる——依頼人の小岩さんこそが、Aさんの日記にあった「ストーカー」だったのだ。",
-        "Aさんは、ストーカーから逃れるために自分の意思で身を隠していた。",
-        "【要確定：真相エンディングの本文】",
+        "あなたが伝えた場所——交番に、小岩さんは姿を現した。",
+        "そこで待っていたのは、Aさんではなく警察だった。",
+        "依頼人の小岩さんこそが、Aさんの日記にあった「ストーカー」だったのだ。",
+        "【要確定：クリアの本文】",
       ],
       epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
       next: null,
     },
     {
-      id: "ending_normal",
+      id: "ending_bad",
       type: "ending",
-      variant: "normal",
-      badge: "NORMAL END",
-      heading: "とりあえずの解決",
+      variant: "bad",
+      badge: "BAD END",
+      heading: "届いてしまった居場所",
       body: [
-        "あなたが伝えた教室へ、小岩さんは向かっていった。",
-        "Aさんの行方はわかった——けれど、事件の裏にある本当の事情までは、たどり着けなかったようだ。",
-        "【要確定：ノーマルエンディングの本文】",
+        "あなたが伝えた場所へ、小岩さんは向かっていった。",
+        "……Aさんが本当に隠れたかった相手は、誰だったのだろうか。",
+        "【要確定：バッドエンドの本文】",
       ],
       epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
       next: null,
@@ -1201,7 +1171,7 @@ const CONFIG = {
     const isPuzzleLike = s && (s.type === "puzzle" || s.type === "final") && s.hints && s.hints.length;
     $btnHint.classList.toggle("hidden", !isPuzzleLike);
     // 謎1(パソコンのパスワード)を解いて地図を入手した後は、いつでも「地図」ボタンから見返せる
-    $btnMap.classList.toggle("hidden", !state.solved["puzzle_pc"]);
+    $btnMap.classList.toggle("hidden", CONFIG.showMapButton === false || !state.solved["puzzle_pc"]);
     // 物語(story)シーンをひとつでも通過していれば、いつでも読み返せる
     $btnStory.classList.toggle("hidden", state.storyLog.length === 0);
     $btnStaff.classList.toggle("hidden", location.hash !== "#staff");
@@ -1440,6 +1410,10 @@ const CONFIG = {
         s.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null,
       ])
     );
+    if (pendingNotice) {
+      card.appendChild(el("div", { class: "notice-box" }, [pendingNotice]));
+      pendingNotice = null;
+    }
     let lockScreenApi = null;
     if (s.lockScreen) {
       lockScreenApi = renderLockScreen(s.maxLength || 4);
@@ -1449,12 +1423,19 @@ const CONFIG = {
     // lockScreenの有無にかかわらず必ず表示する(でないと問題文の図が見えなくなる)。
     const imgBlock = renderSceneImages(s);
     if (imgBlock) card.appendChild(imgBlock);
-    card.appendChild(el("p", { class: "puzzle-prompt" + (s.font === "meiryo" ? " font-meiryo" : "") }, [s.prompt]));
+    // 問題文が空の謎(画像だけで伝わるマップ謎など)は、問題文の段落自体を出さない
+    if (s.prompt) card.appendChild(el("p", { class: "puzzle-prompt" + (s.font === "meiryo" ? " font-meiryo" : "") }, [s.prompt]));
 
     if (state.solved[s.id]) {
       if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
       card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
-      card.appendChild(el("button", { class: "btn btn-block", onclick: () => afterSolve(s) }, ["次へ進む"]));
+      if (s.qrGate) {
+        // 解いた後はQRコードの読み込み欄を出す(読み込むと次の謎へ)。日記などはボタンで読み返せる
+        card.appendChild(renderQrGate(s));
+        card.appendChild(el("button", { class: "btn btn-secondary btn-block", style: "margin-top:12px;", onclick: () => afterSolve(s) }, ["日記を読み返す"]));
+      } else {
+        card.appendChild(el("button", { class: "btn btn-block", onclick: () => afterSolve(s) }, ["次へ進む"]));
+      }
     } else {
       const answerArea = buildAnswerArea(s, () => { afterSolve(s); });
       if (lockScreenApi) {
@@ -1557,7 +1538,8 @@ const CONFIG = {
       box,
       el("div", { class: "diary-toggle-row" }, [toggleBtn]),
       el("div", { class: "story-body" }, [el("p", null, [d.after])]),
-      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ"]),
+      // qrGate のある謎は、日記を読んだあと元の画面(QRコードの読み込み欄)へ戻る
+      el("button", { class: "btn btn-block", onclick: () => (s.qrGate ? (render(), window.scrollTo(0, document.body.scrollHeight)) : goto(s.next)) }, ["次へ"]),
     ]);
     $app.appendChild(wrap);
     applyMode();
@@ -1683,7 +1665,7 @@ const CONFIG = {
         "手がかり一覧を見る(情報を総合する)",
       ])
     );
-    const answerArea = buildAnswerArea(s, () => {
+    const answerArea = s.clearKeywords ? buildSendArea(s) : buildAnswerArea(s, () => {
       state.finishedAt = Date.now();
       persist();
       const target = state.truth ? s.nextTrue : s.nextNormal;
@@ -1692,6 +1674,164 @@ const CONFIG = {
     card.appendChild(answerArea);
     card.appendChild(renderHintSection(s));
     $app.appendChild(card);
+  }
+
+  /* ---------- 最終: 場所を「送信」する入力欄 ----------
+   * clearKeywords のどれかを含めばクリア。含まなければ確認を出し、
+   * それでも送信したらバッドエンドへ(「もう一度考える」で入力に戻れる)。
+   */
+  function buildSendArea(s) {
+    const wrap = el("div", null, []);
+    const input = el("input", { type: "text", maxlength: String(s.maxLength || 30), placeholder: "場所を入力", "aria-label": "小岩さんに伝える場所" });
+    const feedback = el("div", { class: "feedback" }, [""]);
+    const confirmSlot = el("div", null, []);
+    const finish = (target) => {
+      state.finishedAt = Date.now();
+      state.finalAnswer = input.value;
+      persist();
+      goto(target);
+    };
+    const submit = () => {
+      const n = norm(input.value);
+      confirmSlot.innerHTML = "";
+      if (!n) {
+        feedback.textContent = "場所を入力してください。";
+        feedback.className = "feedback ng";
+        return;
+      }
+      feedback.textContent = "";
+      if (s.clearKeywords.some((k) => n.includes(norm(k)))) {
+        markSolved(s.id);
+        finish(s.nextClear);
+        return;
+      }
+      state.wrongCount[s.id] = (state.wrongCount[s.id] || 0) + 1;
+      persist();
+      confirmSlot.appendChild(el("div", { class: "confirm-box" }, [
+        el("p", null, [s.confirmMessage || "本当にここでいいですか？"]),
+        el("div", { class: "confirm-actions" }, [
+          el("button", { class: "btn btn-secondary", onclick: () => { confirmSlot.innerHTML = ""; input.focus(); } }, [s.confirmBackLabel || "もう一度考える"]),
+          el("button", { class: "btn", onclick: () => finish(s.nextBad) }, [s.confirmSendLabel || "送信する"]),
+        ]),
+      ]));
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    wrap.appendChild(el("div", { class: "answer-row" }, [input, el("button", { class: "btn", onclick: submit }, [s.submitLabel || "送信する"])]));
+    wrap.appendChild(feedback);
+    wrap.appendChild(confirmSlot);
+    return wrap;
+  }
+
+  /* ---------- QRコードでしか進めない関門(qrGate) ----------
+   * QRコードの中身は「サイトのURL?qr=token」。
+   *  ・スマホのカメラアプリで読んだ場合: ページが ?qr=token 付きで開き、起動時に handleQrParam() が処理する
+   *  ・この画面の「カメラで読み込む」: BarcodeDetector が使える端末(主にAndroid)ならページ内で読み取る
+   *  ・どちらも無理な場合: QRコードの下に印刷した token を手入力しても進める
+   * 関門の謎を解く前に読み込まれた場合は、先に謎を解くよう案内する(順番を飛ばさせない)。
+   */
+  let pendingNotice = null; // 次に描画する謎の画面の上部に一度だけ出すお知らせ
+  function findQrGate(token) {
+    const n = norm(token);
+    if (!n) return null;
+    return CONFIG.scenes.find((sc) => sc.qrGate && norm(sc.qrGate.token) === n) || null;
+  }
+  function passQrGate(gateScene) {
+    if (!state.solved[gateScene.id]) {
+      pendingNotice = "まだこのQRコードは使えません。先にこの謎を解いてください。";
+      goto(gateScene.id);
+      return;
+    }
+    state.solved[gateScene.id + ":qr"] = true;
+    persist();
+    goto(gateScene.qrGate.target);
+  }
+  function extractQrToken(text) {
+    // 読み取った中身がURLなら ?qr= の値を、そうでなければ中身そのものを token として扱う
+    try {
+      const u = new URL(text, location.href);
+      const q = u.searchParams.get("qr");
+      if (q) return q;
+    } catch (e) {}
+    return text;
+  }
+  function renderQrGate(s) {
+    const g = s.qrGate;
+    const feedback = el("div", { class: "feedback" }, [""]);
+    const input = el("input", { type: "text", placeholder: "QRコードの下の英数字", "aria-label": "QRコードの下の英数字", autocapitalize: "off" });
+    const tryToken = (raw) => {
+      const hit = findQrGate(extractQrToken(raw));
+      if (hit && hit.id === s.id) {
+        passQrGate(s);
+      } else {
+        feedback.textContent = "このQRコードではないようです。";
+        feedback.className = "feedback ng";
+      }
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryToken(input.value); });
+    const camBtn = el("button", { class: "btn btn-block", onclick: () => openQrScanner(tryToken, feedback) }, ["カメラで読み込む"]);
+    return el("div", { class: "qr-gate" }, [
+      el("div", { class: "qr-gate-title" }, [g.label || "QRコードを読み込む"]),
+      camBtn,
+      el("div", { class: "qr-gate-note" }, [(g.note || "") + (g.note ? "\n" : "") + "スマホのカメラアプリでQRコードを読み取っても進めます。"]),
+      el("div", { class: "answer-row" }, [input, el("button", { class: "btn", onclick: () => tryToken(input.value) }, ["進む"])]),
+      feedback,
+    ]);
+  }
+  async function openQrScanner(onText, feedback) {
+    if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      feedback.textContent = "この端末ではページ内のカメラ読み取りが使えません。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の英数字を入力してください。";
+      feedback.className = "feedback ng";
+      return;
+    }
+    let stream = null;
+    let stopped = false;
+    const video = el("video", { playsinline: "true", muted: "true", autoplay: "true" }, []);
+    const close = () => {
+      stopped = true;
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      overlay.remove();
+    };
+    const overlay = el("div", { class: "qr-scanner" }, [
+      video,
+      el("div", { class: "qr-scanner-frame" }, []),
+      el("div", { class: "qr-scanner-hint" }, ["QRコードを枠の中に映してください"]),
+      el("button", { class: "qr-scanner-close", "aria-label": "閉じる", onclick: close }, ["×"]),
+    ]);
+    document.body.appendChild(overlay);
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      video.srcObject = stream;
+      await video.play();
+      const detector = new BarcodeDetector({ formats: ["qr_code"] });
+      const tick = async () => {
+        if (stopped) return;
+        try {
+          const codes = await detector.detect(video);
+          if (codes && codes.length) {
+            close();
+            onText(codes[0].rawValue);
+            return;
+          }
+        } catch (e) {}
+        setTimeout(tick, 250);
+      };
+      tick();
+    } catch (e) {
+      close();
+      feedback.textContent = "カメラを起動できませんでした。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の英数字を入力してください。";
+      feedback.className = "feedback ng";
+    }
+  }
+  // スマホのカメラアプリで読んで ?qr=token 付きで開かれたとき。処理後は ?qr= をURLから消す
+  function handleQrParam() {
+    let token = null;
+    try { token = new URLSearchParams(location.search).get("qr"); } catch (e) {}
+    if (!token) return false;
+    try { history.replaceState({ sceneId: state.sceneId }, "", location.pathname + location.hash); } catch (e) {}
+    const gate = findQrGate(token);
+    if (!gate) return false;
+    passQrGate(gate);
+    return true;
   }
 
   function formatDuration(ms) {
@@ -2115,6 +2255,21 @@ const CONFIG = {
           el("td", null, ["現地で伝える合言葉"]),
         ]));
       }
+      if (s.qrGate) {
+        const url = location.origin + location.pathname + "?qr=" + encodeURIComponent(s.qrGate.token);
+        table.appendChild(el("tr", null, [
+          el("td", null, ["QRコード: " + s.heading + " → " + ((scene(s.qrGate.target) || {}).heading || s.qrGate.target)]),
+          el("td", null, [s.qrGate.token]),
+          el("td", null, ["QRの中身: " + url]),
+        ]));
+      }
+      if (s.clearKeywords) {
+        table.appendChild(el("tr", null, [
+          el("td", null, [s.heading + "(クリア判定)"]),
+          el("td", null, [s.clearKeywords.join(" / ")]),
+          el("td", null, ["いずれかを含めばクリア。それ以外は確認後バッドエンド"]),
+        ]));
+      }
     });
     for (const key in CONFIG.branchCodes) {
       table.appendChild(el("tr", null, [
@@ -2157,6 +2312,7 @@ const CONFIG = {
     history.replaceState({ sceneId: state.sceneId }, "", location.pathname + location.search + location.hash);
   } catch (e) {}
   render();
+  handleQrParam();
   renderStaffPanelIfNeeded();
 })();
 </script>
