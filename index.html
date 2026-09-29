@@ -497,6 +497,11 @@ body::before{display:none;}
 #topbar,#bottombar{background-image:var(--noise);}
 
 /* ---------- 最終画面の確認(送信前の「本当にここでいいですか？」) ---------- */
+/* 指示文を強調する移動シーン(画面中央) */
+.move-emphasis{min-height:calc(100vh - var(--topbar-h) - var(--bar-h) - 24px);min-height:calc(100dvh - var(--topbar-h) - var(--bar-h) - 24px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px 4px;}
+.move-emphasis-label{font-size:12px;font-weight:700;letter-spacing:0.12em;color:var(--muted);margin-bottom:18px;}
+.move-emphasis-text{white-space:pre-line;font-family:var(--mincho);font-size:28px;font-weight:900;line-height:1.6;letter-spacing:0.06em;margin:0 0 14px;padding:18px 0;border-top:3px double var(--line);border-bottom:3px double var(--line);width:100%;}
+.move-emphasis-sub{font-size:14px;color:var(--ink-2);margin:0 0 28px;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -777,7 +782,7 @@ const CONFIG = {
       heading: "特設交番にて",
       messages: [
         { from: "system", text: "名刺を見せて敬礼すると、交番の中に通された" },
-        { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(ファイルのQRコード)" },
+        { from: "system", text: "警官から「刈田さんから預かっている物」を手渡された(QRコードが2枚。1枚はパスワード付きのファイル)" },
         { from: "me", text: "刈田さんが預けていた物……。中を確認してみよう。" },
       ],
       destination: "特設交番",
@@ -810,19 +815,23 @@ const CONFIG = {
           "誰かに見られている、跡をつけられている。そんな気がしてならない。",
           "しばらく、自分の意思で身を隠そうと思う。",
         ],
-        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】\n\nファイルには、もう1つQRコードが添えられていた。",
+        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】",
       },
-      // 解いた後、この画面に「QRコードを読み込む」欄を出す。読み込むと target の謎へ進む。
+      // この画面に「QRコードを読み込む」欄を出す(解く前でも後でも使える)。読み込むと target の謎へ進む。
       // QRコードの中身は「サイトのURL + ?qr=token」。カメラが使えない人向けに、token を手入力しても進める。
       // 【仮】token は本番前に推測されにくい文字列へ差し替え、同じ値でQRコードを作り直すこと
       qrGate: {
         token: "tsk-8q3m",
         target: "puzzle_task",
-        label: "添えられていたQRコードを読み込む",
+        label: "交番で受け取ったQRコードを読み込む",
+        availableAfter: "story_koban", // 交番に着く前に読まれても進ませない
         note: "QRコードの下に書かれている英数字を入力しても進めます。",
       },
       destination: "特設交番",
-      next: "puzzle_task",
+      // ファイルの謎とQRコードの謎は並列(どちらから解いてもよい)。両方解けたら parallelNext へ
+      parallel: ["puzzle_file", "puzzle_task"],
+      parallelNext: "move_poster2",
+      next: "move_poster2",
     },
     {
       id: "puzzle_task",
@@ -840,6 +849,8 @@ const CONFIG = {
       ],
       reward: { label: "QRコードの謎の答え「たすく」", detail: "【要確定：この答えが示すもの】", kind: "doc" },
       destination: "特設交番",
+      parallel: ["puzzle_file", "puzzle_task"], // ファイルの謎と並列
+      parallelNext: "move_poster2",
       next: "move_poster2",
     },
 
@@ -862,7 +873,10 @@ const CONFIG = {
       icon: "🚶",
       heading: "ポスターに示された場所へ",
       // 【注意】行き先は参加者がポスターから自分で読み取る構造。ここで場所の候補を示さないこと
-      body: "ポスターに示された場所へ向かえ。\n到着したら「到着」を押してください。",
+      // emphasis: 指示文だけを画面中央に大きく見せる(目的地の枠は出さない)
+      emphasis: true,
+      body: "ポスターに示された\n場所へ向かえ。",
+      subText: "到着したら「到着」を押してください。",
       destination: "ポスターに示された場所",
       buttonLabel: "到着",
       next: "puzzle_final",
@@ -1185,6 +1199,9 @@ const CONFIG = {
   function render() {
     const s = scene(state.sceneId);
     document.body.className = "scene-" + s.type;
+    // QRコードの関門などで「その段階まで来たか」を判定するため、表示したシーンを記録しておく
+    state.visited = state.visited || {};
+    if (!state.visited[s.id]) { state.visited[s.id] = true; persist(); }
     $app.innerHTML = "";
     if (!state.startedAt && s.id !== CONFIG.scenes[0].id) state.startedAt = state.startedAt || Date.now();
     switch (s.type) {
@@ -1214,6 +1231,11 @@ const CONFIG = {
         break;
       default:
         $app.appendChild(el("p", null, ["未対応のシーン種別です: " + s.type]));
+    }
+    // 一度だけ出すお知らせ(QRコードを早く読みすぎたときなど)は、どの画面でも最上部に出す
+    if (pendingNotice) {
+      $app.insertBefore(el("div", { class: "notice-box", style: "margin-top:16px;" }, [pendingNotice]), $app.firstChild);
+      pendingNotice = null;
     }
     updateDestBar();
     updateBottomBar();
@@ -1410,10 +1432,6 @@ const CONFIG = {
         s.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null,
       ])
     );
-    if (pendingNotice) {
-      card.appendChild(el("div", { class: "notice-box" }, [pendingNotice]));
-      pendingNotice = null;
-    }
     let lockScreenApi = null;
     if (s.lockScreen) {
       lockScreenApi = renderLockScreen(s.maxLength || 4);
@@ -1429,8 +1447,8 @@ const CONFIG = {
     if (state.solved[s.id]) {
       if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
       card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
-      if (s.qrGate) {
-        // 解いた後はQRコードの読み込み欄を出す(読み込むと次の謎へ)。日記などはボタンで読み返せる
+      if (s.qrGate && resolveNext(s) === s.id) {
+        // QRコードの先の謎がまだなら、読み込み欄を出す。日記などはボタンで読み返せる
         card.appendChild(renderQrGate(s));
         card.appendChild(el("button", { class: "btn btn-secondary btn-block", style: "margin-top:12px;", onclick: () => afterSolve(s) }, ["日記を読み返す"]));
       } else {
@@ -1443,6 +1461,8 @@ const CONFIG = {
         input.addEventListener("input", () => lockScreenApi.updateDots(input.value));
       }
       card.appendChild(answerArea);
+      // 並列の謎: この謎を解く前でも、QRコードを読み込んで先に別の謎へ行ける(QRの謎が未解決のときだけ)
+      if (s.qrGate && !state.solved[s.qrGate.target]) card.appendChild(renderQrGate(s));
       if (s.optional) {
         card.appendChild(
           el("div", { class: "skip-row" }, [
@@ -1452,6 +1472,17 @@ const CONFIG = {
       }
     }
     card.appendChild(renderHintSection(s));
+    // 並列の謎: 未解決の仲間の謎へ移れるリンク(QRを読む前の謎は、関門の画面へのリンクになる)
+    if (s.parallel && !state.solved[s.id]) {
+      s.parallel.filter((id) => id !== s.id && !state.solved[id]).forEach((id) => {
+        const gate = CONFIG.scenes.find((sc) => sc.qrGate && sc.qrGate.target === id);
+        const dest = gate && !state.solved[gate.id + ":qr"] ? gate.id : id;
+        if (dest === s.id) return; // 自分の画面のQR欄から行ける場合はリンク不要
+        card.appendChild(el("div", { class: "skip-row" }, [
+          el("button", { onclick: () => goto(dest) }, ["← 先に「" + scene(dest).heading + "」を解く"]),
+        ]));
+      });
+    }
     // 出戻り先(next)がハブ画面(順不同で解ける謎の一覧)なら、解かずにいつでも一覧へ戻れるようにする
     if (scene(s.next) && scene(s.next).type === "hub") {
       card.appendChild(
@@ -1505,7 +1536,22 @@ const CONFIG = {
       showDiaryReveal(s);
       return;
     }
-    goto(s.next);
+    goto(resolveNext(s));
+  }
+
+  /* ---------- 並列の謎(parallel) ----------
+   * parallel に並べた謎はどの順番でも解ける。解き終えたら、まだ解いていない仲間の謎へ、
+   * 全部解けていれば parallelNext へ進む。
+   * 仲間の謎が QRコードの関門(qrGate)の先にあり、まだQRを読んでいない場合は、関門の画面へ戻す。
+   */
+  function resolveNext(s) {
+    if (!s.parallel) return s.next;
+    const rest = s.parallel.filter((id) => id !== s.id && !state.solved[id]);
+    if (!rest.length) return s.parallelNext || s.next;
+    const id = rest[0];
+    const gate = CONFIG.scenes.find((sc) => sc.qrGate && sc.qrGate.target === id);
+    if (gate && !state.solved[gate.id + ":qr"]) return gate.id;
+    return id;
   }
 
   /* ---------- 日記の場面専用の縦書き表示 ----------
@@ -1539,7 +1585,12 @@ const CONFIG = {
       el("div", { class: "diary-toggle-row" }, [toggleBtn]),
       el("div", { class: "story-body" }, [el("p", null, [d.after])]),
       // qrGate のある謎は、日記を読んだあと元の画面(QRコードの読み込み欄)へ戻る
-      el("button", { class: "btn btn-block", onclick: () => (s.qrGate ? (render(), window.scrollTo(0, document.body.scrollHeight)) : goto(s.next)) }, ["次へ"]),
+      // 行き先が自分自身(=QRコードをまだ読んでいない)なら、この謎の画面(QRの読み込み欄)に戻す
+      el("button", { class: "btn btn-block", onclick: () => {
+        const target = resolveNext(s);
+        if (target === s.id) { render(); const g = document.querySelector(".qr-gate"); if (g) g.scrollIntoView({ block: "center" }); }
+        else goto(target);
+      } }, ["次へ"]),
     ]);
     $app.appendChild(wrap);
     applyMode();
@@ -1571,6 +1622,16 @@ const CONFIG = {
   }
 
   function renderMove(s) {
+    if (s.emphasis) {
+      // 指示文を強調する移動シーン: 画面の中央に指示文だけを大きく置く
+      $app.appendChild(el("div", { class: "move-emphasis" }, [
+        el("div", { class: "move-emphasis-label" }, [s.heading]),
+        el("p", { class: "move-emphasis-text" }, [s.body]),
+        s.subText ? el("p", { class: "move-emphasis-sub" }, [s.subText]) : null,
+        el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, [s.buttonLabel || "次へ"]),
+      ]));
+      return;
+    }
     const wrap = el("div", { class: "move-wrap" }, [
       el("div", { class: "move-icon" }, [s.icon || "🚶"]),
       el("h2", null, [s.heading]),
@@ -1736,9 +1797,12 @@ const CONFIG = {
     return CONFIG.scenes.find((sc) => sc.qrGate && norm(sc.qrGate.token) === n) || null;
   }
   function passQrGate(gateScene) {
-    if (!state.solved[gateScene.id]) {
-      pendingNotice = "まだこのQRコードは使えません。先にこの謎を解いてください。";
-      goto(gateScene.id);
+    // 関門の謎を解く前でも読み込める(ファイルの謎とQRコードの謎は並列)。
+    // ただしゲームがまだその段階に来ていない(関門の画面を一度も開いていない)場合は進ませない
+    const required = gateScene.qrGate.availableAfter || gateScene.id;
+    if (!state.visited || !state.visited[required]) {
+      pendingNotice = "このQRコードは、まだ使えません。";
+      render();
       return;
     }
     state.solved[gateScene.id + ":qr"] = true;
