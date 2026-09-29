@@ -502,6 +502,11 @@ body::before{display:none;}
 .move-emphasis-label{font-size:12px;font-weight:700;letter-spacing:0.12em;color:var(--muted);margin-bottom:18px;}
 .move-emphasis-text{white-space:pre-line;font-family:var(--mincho);font-size:28px;font-weight:900;line-height:1.6;letter-spacing:0.06em;margin:0 0 14px;padding:18px 0;border-top:3px double var(--line);border-bottom:3px double var(--line);width:100%;}
 .move-emphasis-sub{font-size:14px;color:var(--ink-2);margin:0 0 28px;}
+/* 指示書(本文から独立した1枚の紙) */
+.instruction{margin:14px 0 18px;padding:14px 16px 16px;background-color:var(--paper-hi);background-image:var(--noise);border:1.5px solid var(--line);outline:1px solid var(--line-soft);outline-offset:-6px;text-align:center;box-shadow:0 3px 10px rgba(50,28,6,0.18);}
+.instruction-label{display:inline-block;font-size:11px;font-weight:800;letter-spacing:0.3em;color:var(--stamp);border-bottom:1.5px solid var(--stamp);padding:0 2px 2px;margin-bottom:10px;}
+.instruction-text{white-space:pre-line;font-family:var(--mincho);font-size:20px;font-weight:900;line-height:1.6;letter-spacing:0.05em;color:var(--ink);}
+.chat-messages .instruction{align-self:stretch;margin:6px 0;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -670,7 +675,7 @@ const CONFIG = {
         { from: "client", text: "その地図なら、わたしのパネルのところに置いてあります。受け取ってください。" },
         { from: "system", text: "小岩さんのパネルから、学内マップを受け取った(裏面には人物紹介)" },
         { from: "system", text: "マップと一緒に、謎と指示書が出てきた" },
-        { from: "system", text: "指示書「謎を解き、指示された場所に行け」" },
+        { from: "instruction", text: "謎を解き、\n指示された場所に行け。" }, // 指示書は独立した紙として表示
         { from: "me", text: "マップの謎を解いてみます。" },
       ],
       destination: null,
@@ -680,7 +685,8 @@ const CONFIG = {
       id: "map_hub",
       type: "hub",
       heading: "マップの謎",
-      body: "謎を解き、指示された場所に行け。\n(どの謎から解いても構わない)",
+      instruction: "謎を解き、\n指示された場所に行け。", // 指示書(本文とは別の紙として表示)
+      body: "どの謎から解いても構いません。",
       puzzles: ["puzzle_map1", "puzzle_map2", "puzzle_map3", "puzzle_map4"],
       reward: { label: "4つの場所を巡り終えた", detail: "マップの謎が指示する4つの場所を、すべて巡った。", kind: "doc" },
       destination: "マップの謎が指示する場所",
@@ -815,7 +821,8 @@ const CONFIG = {
           "誰かに見られている、跡をつけられている。そんな気がしてならない。",
           "しばらく、自分の意思で身を隠そうと思う。",
         ],
-        after: "日記の最後には、こう書かれていた。\n「かるたサークルのポスターへ向かえ」【要確定：ポスター(2枚目)の貼る場所】",
+        after: "日記の最後には、こう書かれていた。",
+        instruction: "かるたサークルの\nポスターへ向かえ。", // 【要確定：ポスター(2枚目)の貼る場所】
       },
       // この画面に「QRコードを読み込む」欄を出す(解く前でも後でも使える)。読み込むと target の謎へ進む。
       // QRコードの中身は「サイトのURL + ?qr=token」。カメラが使えない人向けに、token を手入力しても進める。
@@ -1268,7 +1275,18 @@ const CONFIG = {
 
   // 依頼人とのやり取りは、地の文ではなくメッセージアプリふうのトーク画面で見せる。
   // from: "client"(依頼人・左/吹き出し) / "me"(自分・右/吹き出し) / "system"(中央の小さな通知)
+  // 指示書: 本文に混ぜず、独立した1枚の紙として見せる(マップの謎・日記など共通)
+  function renderInstruction(text, label) {
+    return el("div", { class: "instruction" }, [
+      el("div", { class: "instruction-label" }, [label || "指示書"]),
+      el("div", { class: "instruction-text" }, [text]),
+    ]);
+  }
+
   function renderChatMessage(m) {
+    if (m.from === "instruction") {
+      return renderInstruction(m.text, m.label);
+    }
     if (m.from === "system") {
       return el("div", { class: "chat-system-note" }, [m.text]);
     }
@@ -1526,6 +1544,7 @@ const CONFIG = {
     }));
     const wrap = el("div", { class: "hub-wrap" }, [
       el("h2", null, [s.heading]),
+      s.instruction ? renderInstruction(s.instruction, s.instructionLabel) : null,
       s.body ? el("div", { class: "hub-intro" }, [s.body]) : null,
       grid,
       el("div", { class: "hub-progress" }, [solvedIds.length + " / " + s.puzzles.length + " 解決"]),
@@ -1600,6 +1619,7 @@ const CONFIG = {
       box,
       el("div", { class: "diary-toggle-row" }, [toggleBtn]),
       el("div", { class: "story-body" }, [el("p", null, [d.after])]),
+      d.instruction ? renderInstruction(d.instruction, d.instructionLabel) : null,
       // QRコードの謎(任意)がまだなら、この謎の画面(次へ進むボタン+QRの読み込み欄)に戻す
       el("button", { class: "btn btn-block", onclick: () => {
         if (s.qrGate && !state.solved[s.qrGate.target]) { render(); window.scrollTo(0, 0); }
