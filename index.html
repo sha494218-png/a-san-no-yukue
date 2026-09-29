@@ -828,16 +828,13 @@ const CONFIG = {
         note: "QRコードの下に書かれている文字を入力しても進めます。",
       },
       destination: "特設交番",
-      // ファイルの謎とQRコードの謎は並列(どちらから解いてもよい)。両方解けたら parallelNext へ
-      parallel: ["puzzle_file", "puzzle_task"],
-      parallelNext: "move_poster2",
       next: "move_poster2",
     },
     {
       id: "puzzle_task",
       type: "puzzle",
       heading: "QRコードの謎",
-      optional: false,
+      optional: true, // 解かなくても先へ進める
       image: "images/koban.webp",
       imageAlt: "文字列から言葉を抜き出す謎",
       prompt: "QRコードを読み込むと、この謎が表示された。\n画像の指示にしたがって、3文字の言葉を答えてください。",
@@ -849,8 +846,23 @@ const CONFIG = {
       ],
       reward: { label: "QRコードの謎の答え「たすく」", detail: "【要確定：この答えが示すもの】", kind: "doc" },
       destination: "特設交番",
-      parallel: ["puzzle_file", "puzzle_task"], // ファイルの謎と並列
-      parallelNext: "move_poster2",
+      // 任意の謎: 解くと指名手配書のページへ。解かずに進む場合は、ファイルの謎が未解決ならそちらへ、解決済みならポスターへ
+      next: "doc_wanted",
+      skipNextUnsolved: "puzzle_file",
+      skipNext: "move_poster2",
+    },
+    {
+      id: "doc_wanted",
+      type: "doc",
+      heading: "指名手配書",
+      // 【要差し替え】指名手配書の画像を images/wanted.webp として置くこと(未設置の間は「画像未設置」と表示される)
+      image: "images/wanted.webp",
+      imageAlt: "指名手配書",
+      body: "QRコードの謎を解くと、指名手配書が表示された。",
+      reward: { label: "指名手配書", detail: "QRコードの謎を解いて見つけた指名手配書。", kind: "doc", image: "images/wanted.webp" },
+      buttonLabel: "次へ",
+      // ファイルの謎がまだならそちらへ、解決済みならポスター(2枚目)へ
+      nextUnsolved: "puzzle_file",
       next: "move_poster2",
     },
 
@@ -1226,6 +1238,9 @@ const CONFIG = {
       case "code":
         renderCode(s);
         break;
+      case "doc":
+        renderDoc(s);
+        break;
       case "ending":
         renderEnding(s);
         break;
@@ -1447,8 +1462,9 @@ const CONFIG = {
     if (state.solved[s.id]) {
       if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
       card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
-      if (s.qrGate && resolveNext(s) === s.id) {
-        // QRコードの先の謎がまだなら、読み込み欄を出す。日記などはボタンで読み返せる
+      if (s.qrGate && !state.solved[s.qrGate.target]) {
+        // QRコードの謎(任意)がまだなら読み込み欄を出す。解かずにそのまま先へ進むこともできる
+        card.appendChild(el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ進む"]));
         card.appendChild(renderQrGate(s));
         card.appendChild(el("button", { class: "btn btn-secondary btn-block", style: "margin-top:12px;", onclick: () => afterSolve(s) }, ["日記を読み返す"]));
       } else {
@@ -1466,7 +1482,7 @@ const CONFIG = {
       if (s.optional) {
         card.appendChild(
           el("div", { class: "skip-row" }, [
-            el("button", { onclick: () => goto(s.next) }, ["この謎は解かずに次へ進む"]),
+            el("button", { onclick: () => goto(s.skipNextUnsolved && !state.solved[s.skipNextUnsolved] ? s.skipNextUnsolved : s.skipNext || s.next) }, ["この謎は解かずに次へ進む"]),
           ])
         );
       }
@@ -1584,12 +1600,10 @@ const CONFIG = {
       box,
       el("div", { class: "diary-toggle-row" }, [toggleBtn]),
       el("div", { class: "story-body" }, [el("p", null, [d.after])]),
-      // qrGate のある謎は、日記を読んだあと元の画面(QRコードの読み込み欄)へ戻る
-      // 行き先が自分自身(=QRコードをまだ読んでいない)なら、この謎の画面(QRの読み込み欄)に戻す
+      // QRコードの謎(任意)がまだなら、この謎の画面(次へ進むボタン+QRの読み込み欄)に戻す
       el("button", { class: "btn btn-block", onclick: () => {
-        const target = resolveNext(s);
-        if (target === s.id) { render(); const g = document.querySelector(".qr-gate"); if (g) g.scrollIntoView({ block: "center" }); }
-        else goto(target);
+        if (s.qrGate && !state.solved[s.qrGate.target]) { render(); window.scrollTo(0, 0); }
+        else goto(resolveNext(s));
       } }, ["次へ"]),
     ]);
     $app.appendChild(wrap);
@@ -1619,6 +1633,23 @@ const CONFIG = {
       } }, ["次へ進む"]),
     ]);
     $app.appendChild(wrap);
+  }
+
+  // 資料を見せるだけの画面(指名手配書など)。初めて開いたときに reward を手がかり一覧へ追加する。
+  // nextUnsolved の謎がまだ解かれていなければそちらへ、解かれていれば next へ進む
+  function renderDoc(s) {
+    if (s.reward && !state.solved[s.id]) {
+      addClue(s.reward, s.heading);
+      state.solved[s.id] = true;
+      persist();
+    }
+    const card = el("div", { class: "puzzle-card" }, [el("h2", { class: "puzzle-title" }, [s.heading])]);
+    const imgBlock = renderSceneImages(s);
+    if (imgBlock) card.appendChild(imgBlock);
+    if (s.body) card.appendChild(el("p", { class: "puzzle-prompt" }, [s.body]));
+    const target = s.nextUnsolved && !state.solved[s.nextUnsolved] ? s.nextUnsolved : s.next;
+    card.appendChild(el("button", { class: "btn btn-block", onclick: () => goto(target) }, [s.buttonLabel || "次へ"]));
+    $app.appendChild(card);
   }
 
   function renderMove(s) {
