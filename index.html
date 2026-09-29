@@ -821,11 +821,11 @@ const CONFIG = {
       // QRコードの中身は「サイトのURL + ?qr=token」。カメラが使えない人向けに、token を手入力しても進める。
       // 【仮】token は本番前に推測されにくい文字列へ差し替え、同じ値でQRコードを作り直すこと
       qrGate: {
-        token: "tsk-8q3m",
+        token: "テストプレイ", // 【仮】本番前に差し替えること
         target: "puzzle_task",
         label: "交番で受け取ったQRコードを読み込む",
         availableAfter: "story_koban", // 交番に着く前に読まれても進ませない
-        note: "QRコードの下に書かれている英数字を入力しても進めます。",
+        note: "QRコードの下に書かれている文字を入力しても進めます。",
       },
       destination: "特設交番",
       // ファイルの謎とQRコードの謎は並列(どちらから解いてもよい)。両方解けたら parallelNext へ
@@ -1821,7 +1821,7 @@ const CONFIG = {
   function renderQrGate(s) {
     const g = s.qrGate;
     const feedback = el("div", { class: "feedback" }, [""]);
-    const input = el("input", { type: "text", placeholder: "QRコードの下の英数字", "aria-label": "QRコードの下の英数字", autocapitalize: "off" });
+    const input = el("input", { type: "text", placeholder: "QRコードの下の文字", "aria-label": "QRコードの下の文字", autocapitalize: "off" });
     const tryToken = (raw) => {
       const hit = findQrGate(extractQrToken(raw));
       if (hit && hit.id === s.id) {
@@ -1843,7 +1843,7 @@ const CONFIG = {
   }
   async function openQrScanner(onText, feedback) {
     if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      feedback.textContent = "この端末ではページ内のカメラ読み取りが使えません。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の英数字を入力してください。";
+      feedback.textContent = "この端末ではページ内のカメラ読み取りが使えません。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の文字を入力してください。";
       feedback.className = "feedback ng";
       return;
     }
@@ -1882,7 +1882,7 @@ const CONFIG = {
       tick();
     } catch (e) {
       close();
-      feedback.textContent = "カメラを起動できませんでした。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の英数字を入力してください。";
+      feedback.textContent = "カメラを起動できませんでした。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の文字を入力してください。";
       feedback.className = "feedback ng";
     }
   }
