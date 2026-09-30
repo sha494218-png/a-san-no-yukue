@@ -1883,6 +1883,7 @@ const CONFIG = {
       }
     };
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryToken(input.value); });
+    loadJsQR().catch(() => {}); // 読み取りライブラリを先に読み込んでおく(カメラを押したときにすぐ動くように)
     const camBtn = el("button", { class: "btn btn-block", onclick: () => openQrScanner(tryToken, feedback) }, ["カメラで読み込む"]);
     return el("div", { class: "qr-gate" }, [
       el("div", { class: "qr-gate-title" }, [g.label || "QRコードを読み込む"]),
@@ -1892,15 +1893,65 @@ const CONFIG = {
       feedback,
     ]);
   }
+  // QRコードの読み取りライブラリ(lib/jsQR.js, Apache-2.0)は、QRの読み込み欄が出たときだけ読み込む
+  let jsQRPromise = null;
+  function loadJsQR() {
+    if (window.jsQR) return Promise.resolve(window.jsQR);
+    if (!jsQRPromise) {
+      jsQRPromise = new Promise((resolve, reject) => {
+        const sc = document.createElement("script");
+        sc.src = "lib/jsQR.js";
+        sc.onload = () => (window.jsQR ? resolve(window.jsQR) : reject(new Error("jsQR not found")));
+        sc.onerror = () => { jsQRPromise = null; reject(new Error("jsQR load failed")); };
+        document.head.appendChild(sc);
+      });
+    }
+    return jsQRPromise;
+  }
+  // ページ内カメラでQRを読み取る。BarcodeDetector がある端末(Android Chrome など)はそれを使い、
+  // 無い端末(iPhone Safari・パソコンなど)は jsQR でカメラ映像を1コマずつ解析する
   async function openQrScanner(onText, feedback) {
-    if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      feedback.textContent = "この端末ではページ内のカメラ読み取りが使えません。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の文字を入力してください。";
+    const fail = (msg) => {
+      feedback.textContent = msg + "スマホのカメラアプリでQRコードを読み取るか、QRコードの下の文字を入力してください。";
       feedback.className = "feedback ng";
+    };
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      fail("この端末ではページ内のカメラが使えません。");
       return;
+    }
+    let decode = null;
+    if ("BarcodeDetector" in window) {
+      try {
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+        decode = async (video) => {
+          const codes = await detector.detect(video);
+          return codes && codes.length ? codes[0].rawValue : null;
+        };
+      } catch (e) { decode = null; }
+    }
+    if (!decode) {
+      let jsQR;
+      try { jsQR = await loadJsQR(); } catch (e) { fail("読み取りの準備に失敗しました。"); return; }
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      decode = async (video) => {
+        const w = video.videoWidth, h = video.videoHeight;
+        if (!w || !h) return null;
+        // 処理を軽くするため、長辺640pxに縮小して解析する
+        const scale = Math.min(1, 640 / Math.max(w, h));
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+        return code ? code.data : null;
+      };
     }
     let stream = null;
     let stopped = false;
     const video = el("video", { playsinline: "true", muted: "true", autoplay: "true" }, []);
+    video.muted = true;
+    video.setAttribute("playsinline", ""); // iPhoneで全画面再生にならないように
     const close = () => {
       stopped = true;
       if (stream) stream.getTracks().forEach((t) => t.stop());
@@ -1917,25 +1968,24 @@ const CONFIG = {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
       video.srcObject = stream;
       await video.play();
-      const detector = new BarcodeDetector({ formats: ["qr_code"] });
-      const tick = async () => {
-        if (stopped) return;
-        try {
-          const codes = await detector.detect(video);
-          if (codes && codes.length) {
-            close();
-            onText(codes[0].rawValue);
-            return;
-          }
-        } catch (e) {}
-        setTimeout(tick, 250);
-      };
-      tick();
     } catch (e) {
       close();
-      feedback.textContent = "カメラを起動できませんでした。スマホのカメラアプリでQRコードを読み取るか、QRコードの下の文字を入力してください。";
-      feedback.className = "feedback ng";
+      fail("カメラを起動できませんでした(カメラの使用が許可されていない可能性があります)。");
+      return;
     }
+    const tick = async () => {
+      if (stopped) return;
+      try {
+        const text = await decode(video);
+        if (text) {
+          close();
+          onText(text);
+          return;
+        }
+      } catch (e) {}
+      setTimeout(tick, 200);
+    };
+    tick();
   }
   // スマホのカメラアプリで読んで ?qr=token 付きで開かれたとき。処理後は ?qr= をURLから消す
   function handleQrParam() {
