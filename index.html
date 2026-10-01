@@ -507,6 +507,15 @@ body::before{display:none;}
 .instruction-label{display:inline-block;font-size:11px;font-weight:800;letter-spacing:0.3em;color:var(--stamp);border-bottom:1.5px solid var(--stamp);padding:0 2px 2px;margin-bottom:10px;}
 .instruction-text{white-space:pre-line;font-family:var(--mincho);font-size:20px;font-weight:900;line-height:1.6;letter-spacing:0.05em;color:var(--ink);}
 .chat-messages .instruction{align-self:stretch;margin:6px 0;}
+/* 日記: 日付ごとの区切り */
+.diary-entry{margin-bottom:18px;}
+.diary-entry:last-child{margin-bottom:0;}
+.diary-box p.diary-date{font-family:var(--gothic);font-size:13px;font-weight:800;letter-spacing:0.08em;color:var(--ink-2);margin:0 0 4px;}
+.diary-box.diary-box-horizontal .diary-entry p{margin:0;}
+.diary-box.diary-box-horizontal .diary-entry p:not(.diary-date){font-size:15px;line-height:1.95;}
+/* 指示文の下の画像(ポスターの謎) */
+.move-emphasis-image{width:100%;margin:4px 0 6px;}
+.move-emphasis-image .puzzle-image-caption{margin-top:-8px;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -810,19 +819,19 @@ const CONFIG = {
       ],
       reward: {
         label: "流川さんの日記を入手",
-        detail: "ファイルの中身は流川さんの日記だった。\nストーカーがいること、自分の意思で身を隠すことが書かれていた。\n最後には、ある場所へ向かえという指示があった。",
+        detail: "ファイルの中身は流川さんの日記だった。\n後ろをつけてくるストーカーがいること、しばらく身を隠すことが書かれていた。\n最後の日付には「ポスターを設置した。場所は文字を読めばわかる。」とある。",
         kind: "diary",
       },
-      // 日記の場面だけ縦書きで見せる(作中で唯一流川さん本人の声が直接出てくる箇所のため)。
+      // 流川さんの日記(元原稿: images/日記.webp)。横書きで、日付ごとに区切って表示する。
       diaryReveal: {
         before: "ファイルを開くと、流川さんの日記が入っていた。",
-        vertical: [
-          "……ストーカーがいる気がする。",
-          "誰かに見られている、跡をつけられている。そんな気がしてならない。",
-          "しばらく、自分の意思で身を隠そうと思う。",
+        horizontal: true, // 横書きで表示(縦書き切り替えボタンは出さない)
+        entries: [
+          { date: "■○月○日", text: "　サークル帰りに一人で歩いていたとき、ずっと後ろをつけてきている人がいた気がした。さすがに気のせいだろうけど怖くなってしばらくコンビニで時間をつぶした。サスペンスの見過ぎだな。肉まんはおいしかった。" },
+          { date: "■○月○日", text: "　今日も後ろに誰かいた気がした。ストーカーか…？　昨日のことで少し敏感になり過ぎているだけだろうか。でも確かにいた気がした。ちょっと怖いな。" },
+          { date: "■○月○日", text: "　今日もいた。やっぱり後ろをつけられていた。さすがに三日連続は偶然じゃないよな？　ストーカーだ。どうしようどうしよう。怖すぎる。とりあえず身を隠すしかない。しばらくはあのストーカーに見つからないところにいよう。" },
+          { date: "■○月○日", text: "ポスターを設置した。場所は文字を読めばわかる。" },
         ],
-        after: "日記の最後には、こう書かれていた。",
-        instruction: "かるたサークルの\nポスターへ向かえ。", // 【要確定：ポスター(2枚目)の貼る場所】
       },
       // この画面に「QRコードを読み込む」欄を出す(解く前でも後でも使える)。読み込むと target の謎へ進む。
       // QRコードの中身は「サイトのURL + ?qr=token」。カメラが使えない人向けに、token を手入力しても進める。
@@ -895,6 +904,9 @@ const CONFIG = {
       // emphasis: 指示文だけを画面中央に大きく見せる(目的地の枠は出さない)
       emphasis: true,
       body: "ポスターに示された\n場所へ向かえ。",
+      // 指示文の下に出すポスターの謎(元ファイル: images/ポスター謎.webp)
+      image: "images/poster2.webp",
+      imageAlt: "ポスターの謎(ポスターの文字を読め)",
       subText: "到着したら「到着」を押してください。",
       destination: "ポスターに示された場所",
       buttonLabel: "到着",
@@ -1598,8 +1610,12 @@ const CONFIG = {
   function showDiaryReveal(s) {
     const d = s.diaryReveal;
     $app.innerHTML = "";
-    let vertical = true;
-    const box = el("div", { class: "diary-box" }, d.vertical.map((line) => el("p", null, [line])));
+    let vertical = !d.horizontal;
+    // entries(日付+本文)があれば日付ごとに区切って表示。無ければ従来の vertical(行の配列)
+    const paras = d.entries
+      ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, [en.text])]))
+      : d.vertical.map((line) => el("p", null, [line]));
+    const box = el("div", { class: "diary-box" }, paras);
     const toggleBtn = el("button", { class: "btn-secondary btn diary-toggle", type: "button" }, ["横書きで読む"]);
     function applyMode() {
       box.classList.toggle("diary-box-horizontal", !vertical);
@@ -1617,8 +1633,8 @@ const CONFIG = {
       el("h2", null, [s.heading]),
       el("div", { class: "story-body" }, [el("p", null, [d.before])]),
       box,
-      el("div", { class: "diary-toggle-row" }, [toggleBtn]),
-      el("div", { class: "story-body" }, [el("p", null, [d.after])]),
+      d.horizontal ? null : el("div", { class: "diary-toggle-row" }, [toggleBtn]),
+      d.after ? el("div", { class: "story-body" }, [el("p", null, [d.after])]) : null,
       d.instruction ? renderInstruction(d.instruction, d.instructionLabel) : null,
       // QRコードの謎(任意)がまだなら、この謎の画面(次へ進むボタン+QRの読み込み欄)に戻す
       el("button", { class: "btn btn-block", onclick: () => {
@@ -1678,6 +1694,8 @@ const CONFIG = {
       $app.appendChild(el("div", { class: "move-emphasis" }, [
         el("div", { class: "move-emphasis-label" }, [s.heading]),
         el("p", { class: "move-emphasis-text" }, [s.body]),
+        // 指示文の下に出す画像(ポスターの謎など)。タップで拡大できる
+        s.image || s.images ? el("div", { class: "move-emphasis-image" }, [renderSceneImages(s)]) : null,
         s.subText ? el("p", { class: "move-emphasis-sub" }, [s.subText]) : null,
         el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, [s.buttonLabel || "次へ"]),
       ]));
