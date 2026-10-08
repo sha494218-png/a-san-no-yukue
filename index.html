@@ -483,7 +483,9 @@ body::before{display:none;}
 .clue-item{background-image:var(--noise);}
 .diary-box{background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line-soft) 31px, var(--line-soft) 32px);box-shadow:inset 0 0 22px rgba(105,62,18,0.28), 0 4px 14px rgba(50,28,6,0.22);}
 /* 謎の画像は紙に刷られたように(白地が紙の色になる) */
-.puzzle-image-thumb,.hub-card .hub-thumb,.clue-item img{mix-blend-mode:multiply;background:transparent;}
+/* 謎の画像は色そのものが手がかりになる(白いマス=「しろ」など)ので、乗算せず元の色のまま白地に置く */
+.puzzle-image-thumb{mix-blend-mode:normal;background:#fff;}
+.hub-card .hub-thumb,.clue-item img{mix-blend-mode:multiply;background:transparent;}
 .puzzle-image-thumb{border-color:var(--line-soft);}
 /* ハンコ・赤い刷り文字のかすれ */
 .title-wrap::after,.hub-card.solved::after,.ending-badge,.puzzle-card::before,.title-wrap::before,.hub-wrap h2::before{
@@ -509,6 +511,8 @@ body::before{display:none;}
 .chat-messages .instruction{align-self:stretch;margin:6px 0;}
 /* 日記: 日付ごとの区切り */
 .diary-entry{margin-bottom:18px;}
+/* 原稿で書体が違う文字(明朝の中にだけ細いゴシックで混ぜる。目立たせすぎない) */
+.diary-box .diary-alt{font-family:var(--gothic);font-weight:300;}
 .diary-entry:last-child{margin-bottom:0;}
 .diary-box p.diary-date{font-family:var(--gothic);font-size:13px;font-weight:800;letter-spacing:0.08em;color:var(--ink-2);margin:0 0 4px;}
 .diary-box.diary-box-horizontal .diary-entry p{margin:0;}
@@ -823,13 +827,14 @@ const CONFIG = {
         kind: "diary",
       },
       // 流川さんの日記(元原稿: images/日記.webp)。横書きで、日付ごとに区切って表示する。
+      // {{文字}} で囲んだ文字だけ書体を変えて表示する(原稿で書体が違う文字。順に読むと「ぶどう」)
       diaryReveal: {
         before: "ファイルを開くと、流川さんの日記が入っていた。",
         horizontal: true, // 横書きで表示(縦書き切り替えボタンは出さない)
         entries: [
-          { date: "■○月○日", text: "　サークル帰りに一人で歩いていたとき、ずっと後ろをつけてきている人がいた気がした。さすがに気のせいだろうけど怖くなってしばらくコンビニで時間をつぶした。サスペンスの見過ぎだな。肉まんはおいしかった。" },
+          { date: "■○月○日", text: "　サークル帰りに一人で歩いていたとき、ずっと後ろをつけてきている人がいた気がした。さすがに気のせいだろうけど怖くなってしばらくコンビニで時間をつ{{ぶ}}した。サスペンスの見過ぎだな。肉まんはおいしかった。" },
           { date: "■○月○日", text: "　今日も後ろに誰かいた気がした。ストーカーか…？　昨日のことで少し敏感になり過ぎているだけだろうか。でも確かにいた気がした。ちょっと怖いな。" },
-          { date: "■○月○日", text: "　今日もいた。やっぱり後ろをつけられていた。さすがに三日連続は偶然じゃないよな？　ストーカーだ。どうしようどうしよう。怖すぎる。とりあえず身を隠すしかない。しばらくはあのストーカーに見つからないところにいよう。" },
+          { date: "■○月○日", text: "　今日もいた。やっぱり後ろをつけられていた。さすがに三日連続は偶然じゃないよな？　ストーカーだ。どうしよう{{ど}}うしよう。怖すぎる。とりあえず身を隠すしかない。しばらくはあのストーカーに見つからないところにいよ{{う}}。" },
           { date: "■○月○日", text: "ポスターを設置した。場所は文字を読めばわかる。" },
         ],
       },
@@ -1612,8 +1617,13 @@ const CONFIG = {
     $app.innerHTML = "";
     let vertical = !d.horizontal;
     // entries(日付+本文)があれば日付ごとに区切って表示。無ければ従来の vertical(行の配列)
+    // {{x}} で囲んだ部分だけ別の書体(span.diary-alt)にする
+    const withAlt = (text) => text.split(/(\{\{[^}]*\}\})/).filter(Boolean).map((part) => {
+      const m = part.match(/^\{\{([^}]*)\}\}$/);
+      return m ? el("span", { class: "diary-alt" }, [m[1]]) : part;
+    });
     const paras = d.entries
-      ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, [en.text])]))
+      ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, withAlt(en.text))]))
       : d.vertical.map((line) => el("p", null, [line]));
     const box = el("div", { class: "diary-box" }, paras);
     const toggleBtn = el("button", { class: "btn-secondary btn diary-toggle", type: "button" }, ["横書きで読む"]);
