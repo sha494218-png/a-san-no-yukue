@@ -520,6 +520,11 @@ body::before{display:none;}
 /* 指示文の下の画像(ポスターの謎) */
 .move-emphasis-image{width:100%;margin:4px 0 6px;}
 .move-emphasis-image .puzzle-image-caption{margin-top:-8px;}
+/* マップ謎: 解いたあとのキーワード入力欄 */
+.arrival-panel{margin-top:16px;padding-top:4px;}
+.arrival-panel-text{font-size:14px;line-height:1.8;margin:0 0 12px;}
+.hub-card.pending .hub-status{background:var(--stamp);color:#fff;}
+.hub-card.locked{opacity:0.5;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -706,6 +711,7 @@ const CONFIG = {
       next: "puzzle_board",
     },
     // 【要確定】どの謎の場所でどの情報が得られるかの対応は、シナリオの記載順に仮で割り当てています。
+    // 1問解くとその場所のキーワード入力画面になり、入力するまで他の謎は開かない(一気に解かれるのを防ぐ)。
     {
       id: "puzzle_map1", type: "puzzle", heading: "マップ謎", optional: false,
       image: "images/map_apple.webp", imageAlt: "反省+囲碁+理科の謎",
@@ -717,6 +723,7 @@ const CONFIG = {
         "答え：りんご",
       ],
       reward: { label: "「りんご」の場所：ミエダイ探偵の情報", detail: "地図の「りんご」の場所に、ミエダイ探偵についての情報が置いてある。現地で確認しよう。", kind: "person" },
+      arrivalPlace: "地図の「りんご」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
     {
@@ -730,6 +737,7 @@ const CONFIG = {
         "答え：うさぎ",
       ],
       reward: { label: "「うさぎ」の場所：刈田の情報", detail: "地図の「うさぎ」の場所に、刈田という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
+      arrivalPlace: "地図の「うさぎ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
     {
@@ -743,6 +751,7 @@ const CONFIG = {
         "答え：ゴリラ",
       ],
       reward: { label: "「ゴリラ」の場所：刈田の情報(2)", detail: "地図の「ゴリラ」の場所に、刈田についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
+      arrivalPlace: "地図の「ゴリラ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
     {
@@ -756,6 +765,7 @@ const CONFIG = {
         "答え：トリ",
       ],
       reward: { label: "「トリ」の場所：アナグラムの情報", detail: "地図の「トリ」の場所に、アナグラムについての情報が置いてある。現地で確認しよう。\nマップ裏の人物紹介の「穴あき」部分に使えそうだ。", kind: "doc" },
+      arrivalPlace: "地図の「トリ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
 
@@ -835,7 +845,7 @@ const CONFIG = {
           { date: "■○月○日", text: "　サークル帰りに一人で歩いていたとき、ずっと後ろをつけてきている人がいた気がした。さすがに気のせいだろうけど怖くなってしばらくコンビニで時間をつ{{ぶ}}した。サスペンスの見過ぎだな。肉まんはおいしかった。" },
           { date: "■○月○日", text: "　今日も後ろに誰かいた気がした。ストーカーか…？　昨日のことで少し敏感になり過ぎているだけだろうか。でも確かにいた気がした。ちょっと怖いな。" },
           { date: "■○月○日", text: "　今日もいた。やっぱり後ろをつけられていた。さすがに三日連続は偶然じゃないよな？　ストーカーだ。どうしよう{{ど}}うしよう。怖すぎる。とりあえず身を隠すしかない。しばらくはあのストーカーに見つからないところにいよ{{う}}。" },
-          { date: "■○月○日", text: "ポスターを設置した。場所は文字を読めばわかる。" },
+          { date: "■○月○日", text: "ポスターを設置した。場所は{{文字}}を読めばわかる。" },
         ],
       },
       // この画面に「QRコードを読み込む」欄を出す(解く前でも後でも使える)。読み込むと target の謎へ進む。
@@ -1475,6 +1485,17 @@ const CONFIG = {
   }
 
   function renderPuzzle(s) {
+    // 同じハブの別の謎が「キーワード未入力」なら、この謎はまだ開けない(戻るボタンなどで直接来た場合)
+    const hub = CONFIG.scenes.find((h) => h.type === "hub" && h.puzzles.includes(s.id));
+    const pendingId = hub && hub.puzzles.find((id) => id !== s.id && needsArrival(scene(id)));
+    if (pendingId && !state.solved[s.id]) {
+      $app.appendChild(el("div", { class: "puzzle-card" }, [
+        el("h2", { class: "puzzle-title" }, [s.heading]),
+        el("div", { class: "notice-box" }, ["この謎はまだ開けません。先に" + (scene(pendingId).arrivalPlace || "前の謎の場所") + "でキーワードを入力してください。"]),
+        el("button", { class: "btn btn-block", onclick: () => goto(pendingId) }, ["キーワードを入力する"]),
+      ]));
+      return;
+    }
     const card = el("div", { class: "puzzle-card" }, []);
     card.appendChild(
       el("h2", { class: "puzzle-title" }, [
@@ -1497,7 +1518,16 @@ const CONFIG = {
     if (state.solved[s.id]) {
       if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
       card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
-      if (s.qrGate && !state.solved[s.qrGate.target]) {
+      if (needsArrival(s)) {
+        // マップ謎: 正解したら、その場所へ行ってキーワードを入力するまで先へ進めない
+        card.appendChild(el("div", { class: "arrival-panel" }, [
+          renderInstruction((s.arrivalPlace || "謎が示す場所") + "へ向かえ。", "指示"),
+          el("p", { class: "arrival-panel-text" }, ["着いたら、その場所にあるキーワードを入力してください。入力すると、次の謎が開きます。"]),
+          renderArrivalCheck(Object.assign({}, s, { arrivalLabel: s.arrivalLabel || "その場所にあるキーワード" }), s.id + ":arrived"),
+        ]));
+      } else if (s.arrivalCodes) {
+        card.appendChild(el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["謎の一覧に戻る"]));
+      } else if (s.qrGate && !state.solved[s.qrGate.target]) {
         // QRコードの謎(任意)がまだなら読み込み欄を出す。解かずにそのまま先へ進むこともできる
         card.appendChild(el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ進む"]));
         card.appendChild(renderQrGate(s));
@@ -1546,23 +1576,29 @@ const CONFIG = {
   }
 
   function renderHub(s) {
-    const solvedIds = s.puzzles.filter((id) => state.solved[id]);
+    // 解いたあと現地のキーワードが未入力の謎があれば、それを入力するまで他の謎は開けない
+    const pending = s.puzzles.find((id) => needsArrival(scene(id)));
+    const solvedIds = s.puzzles.filter((id) => state.solved[id] && !needsArrival(scene(id)));
     const allSolved = solvedIds.length === s.puzzles.length;
     // optionalPuzzles(任意の謎)もカードとして並べるが、「次へ進む」の条件には含めない
     const cardIds = s.puzzles.concat(s.optionalPuzzles || []);
     const grid = el("div", { class: "hub-grid" }, cardIds.map((id) => {
       const p = scene(id);
       const isSolved = !!state.solved[id];
-      return el("button", { class: "hub-card" + (isSolved ? " solved" : ""), onclick: () => goto(id) }, [
+      const isPending = id === pending;
+      const isLocked = !!pending && !isSolved;
+      const status = isPending ? "キーワード未入力" : isSolved ? "解決済み" : isLocked ? "🔒 まだ開けない" : "未解決";
+      return el("button", { class: "hub-card" + (isSolved && !isPending ? " solved" : "") + (isPending ? " pending" : "") + (isLocked ? " locked" : ""), onclick: () => goto(isLocked ? pending : id) }, [
         // 番号の代わりに謎の画像を縮小して載せ、どの謎か見てわかるようにする
         p && p.image ? el("img", { class: "hub-thumb", src: p.image, alt: p.imageAlt || "", loading: "lazy" }) : null,
-        el("div", { class: "hub-status" }, [isSolved ? "解決済み" : "未解決", p && p.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null]),
+        el("div", { class: "hub-status" }, [status, p && p.optional ? el("span", { class: "puzzle-optional-badge" }, ["任意"]) : null]),
       ]);
     }));
     const wrap = el("div", { class: "hub-wrap" }, [
       el("h2", null, [s.heading]),
       s.instruction ? renderInstruction(s.instruction, s.instructionLabel) : null,
       s.body ? el("div", { class: "hub-intro" }, [s.body]) : null,
+      pending ? el("div", { class: "notice-box" }, [(scene(pending).arrivalPlace || "謎が示す場所") + "へ行き、そこにあるキーワードを入力すると、次の謎が開きます。"]) : null,
       grid,
       el("div", { class: "hub-progress" }, [solvedIds.length + " / " + s.puzzles.length + " 解決"]),
       allSolved
@@ -1578,8 +1614,20 @@ const CONFIG = {
     $app.appendChild(wrap);
   }
 
+  // 解いたあと、現地でキーワードを入力する必要がある謎(マップ謎)で、まだ入力していないか
+  function needsArrival(sc) {
+    return !!(sc && sc.type === "puzzle" && sc.arrivalCodes && state.solved[sc.id] && !state.solved[sc.id + ":arrived"]);
+  }
+
   function afterSolve(s) {
     if (s.reward) addClue(s.reward, s.heading);
+    if (needsArrival(s)) {
+      // その場所へ行ってキーワードを入れる画面(同じ謎の画面の下部)を出す
+      render();
+      const box = document.querySelector(".arrival-panel");
+      if (box) box.scrollIntoView({ block: "center" });
+      return;
+    }
     if (s.lionSpecial) {
       showLionReveal(s);
       return;
@@ -1728,16 +1776,17 @@ const CONFIG = {
 
   // 現地に着いたことを、現地で伝えられる合言葉の入力で確認する(移動シーン用)。
   // 一度確認できたら state.solved に記録し、戻ってきても再入力はいらない(解いた謎の数には数えない)。
-  function renderArrivalCheck(s) {
+  // key: 到着済みを記録する state.solved のキー(移動シーンは自分のID、謎は「ID:arrived」)
+  function renderArrivalCheck(s, key) {
     const feedback = el("div", { class: "feedback" }, [""]);
     const input = el("input", { type: "text", placeholder: s.arrivalLabel || "現地の合言葉", "aria-label": s.arrivalLabel || "現地の合言葉" });
     const submit = () => {
       if (matchAny(input.value, s.arrivalCodes)) {
-        state.solved[s.id] = true;
+        state.solved[key || s.id] = true;
         persist();
         goto(s.next);
       } else {
-        feedback.textContent = "合言葉が違うようです。現地でもう一度確かめてください。";
+        feedback.textContent = "キーワードが違うようです。現地でもう一度確かめてください。";
         feedback.className = "feedback ng";
       }
     };
@@ -2419,6 +2468,7 @@ const CONFIG = {
               if (!(scene(pid) && scene(pid).arrivalCodes)) state.solvedCount = Math.max(0, (state.solvedCount || 0) - 1);
             }
             delete state.hintsOpened[pid];
+            delete state.solved[pid + ":arrived"];
             delete state.wrongCount[pid];
           });
           persist();
@@ -2443,7 +2493,7 @@ const CONFIG = {
       }
       if (s.arrivalCodes) {
         table.appendChild(el("tr", null, [
-          el("td", null, ["到着確認: " + (s.destination || s.heading)]),
+          el("td", null, ["到着確認: " + (s.arrivalPlace || s.destination || s.heading)]),
           el("td", null, [s.arrivalCodes.join(" / ")]),
           el("td", null, ["現地で伝える合言葉"]),
         ]));
