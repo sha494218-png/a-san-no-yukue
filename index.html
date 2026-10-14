@@ -525,6 +525,12 @@ body::before{display:none;}
 .arrival-panel-text{font-size:14px;line-height:1.8;margin:0 0 12px;}
 .hub-card.pending .hub-status{background:var(--stamp);color:#fff;}
 .hub-card.locked{opacity:0.5;}
+/* 依頼人の名前(行書体の画像) */
+.chat-col{display:flex;flex-direction:column;align-items:flex-start;max-width:78%;}
+.chat-col .chat-bubble{max-width:100%;}
+.chat-name{height:15px;width:auto;margin:0 0 4px 2px;display:block;}
+.inline-name{height:1.25em;width:auto;vertical-align:-0.3em;margin:0 1px;}
+.chat-messages-compact .chat-name{height:13px;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -611,6 +617,9 @@ const CONFIG = {
   // 流れ資料より「依頼人と刈田の名前はアナグラム謎と同じフォント(メイリオ)で書く」ため meiryo を指定。
   clientAvatar: "小",
   clientNameFont: "meiryo",
+  // 依頼人のフルネーム。HG行書体で書き出した画像で表示する(指名手配書の名前と同じ書体。スマホでも同じ見た目になるよう画像にしている)
+  clientName: "小岩香苗",
+  clientNameImage: "images/name_koiwa.png",
 
   // 分岐の合言葉は廃止(真相の場所は参加者が現地で読み取り、最後の「小岩さんに伝える場所」で判定する)
   branchCodes: {},
@@ -642,7 +651,7 @@ const CONFIG = {
       messages: [
         { from: "system", text: "受付で名刺(参加証)を受け取った" },
         { from: "system", text: "依頼人・小岩さんとのトークが始まりました" },
-        { from: "client", text: "はじめまして、小岩と申します。探偵さんにご相談したいことがあります。" },
+        { from: "client", text: "はじめまして、{{依頼人}}と申します。探偵さんにご相談したいことがあります。" },
         { from: "client", text: "恋人の流川透太さんと、しばらく連絡が取れていないんです。" },
         { from: "client", text: "流川さんが使っていたパソコンを預かっています。中に手がかりがあるかもしれません。" },
         { from: "client", text: "ただ……パスワードがかかっていて、わたしには開けませんでした。" },
@@ -1310,7 +1319,8 @@ const CONFIG = {
     ]);
   }
 
-  function renderChatMessage(m) {
+  // showName: 同じ人の吹き出しが続くときは、最初の1つにだけ名前を出す
+  function renderChatMessage(m, showName) {
     if (m.from === "instruction") {
       return renderInstruction(m.text, m.label);
     }
@@ -1318,10 +1328,22 @@ const CONFIG = {
       return el("div", { class: "chat-system-note" }, [m.text]);
     }
     const isMe = m.from === "me";
+    const bubble = el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, withClientName(m.text));
     return el("div", { class: "chat-row " + (isMe ? "chat-row-me" : "chat-row-client") }, [
       isMe ? null : el("div", { class: "chat-avatar" + (CONFIG.clientNameFont === "meiryo" ? " font-meiryo" : "") }, [CONFIG.clientAvatar || "依"]),
-      el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, [m.text]),
+      // 依頼人の吹き出しの上には名前(行書体の画像)を出す
+      isMe ? bubble : el("div", { class: "chat-col" }, [showName === false ? null : clientNameImg("chat-name"), bubble]),
     ]);
+  }
+
+  // 依頼人のフルネーム(行書体)は、どの端末でも同じ書体で見えるよう画像で表示する
+  function clientNameImg(cls) {
+    if (!CONFIG.clientNameImage) return el("span", { class: cls }, [CONFIG.clientName || ""]);
+    return el("img", { class: cls, src: CONFIG.clientNameImage, alt: CONFIG.clientName || "" });
+  }
+  // 本文中の {{依頼人}} を、行書体の名前画像に置き換える
+  function withClientName(text) {
+    return String(text).split(/(\{\{依頼人\}\})/).filter(Boolean).map((part) => (part === "{{依頼人}}" ? clientNameImg("inline-name") : part));
   }
 
   function renderChat(s) {
@@ -1329,7 +1351,7 @@ const CONFIG = {
       state.storyLog.push(s.id);
       persist();
     }
-    const messages = el("div", { class: "chat-messages" }, s.messages.map(renderChatMessage));
+    const messages = el("div", { class: "chat-messages" }, s.messages.map((m, i, arr) => renderChatMessage(m, !(i > 0 && arr[i - 1].from === m.from))));
     const wrap = el("div", { class: "chat-wrap" }, [
       el("h2", null, [s.heading]),
       messages,
@@ -2210,7 +2232,7 @@ const CONFIG = {
         list.appendChild(
           el("div", { class: "story-log-item" }, [
             el("div", { class: "story-log-heading" }, [s.heading]),
-            el("div", { class: "story-log-body chat-messages chat-messages-compact" }, s.messages.map(renderChatMessage)),
+            el("div", { class: "story-log-body chat-messages chat-messages-compact" }, s.messages.map((m, i, arr) => renderChatMessage(m, !(i > 0 && arr[i - 1].from === m.from)))),
           ])
         );
       });
