@@ -2019,34 +2019,47 @@ const CONFIG = {
       fail("この端末ではページ内のカメラが使えません。");
       return;
     }
-    let decode = null;
+    // 読み取りの方針:
+    //  ・jsQR はどの端末でも必ず使う(iPhone・Android・パソコン共通で動作確認済みの経路)
+    //  ・BarcodeDetector は「QRに対応している」と確認できた端末でだけ補助的に使う
+    //    (Android の Chrome には BarcodeDetector があっても、端末によっては実際には読めず、
+    //     detect() がエラーや空の結果を返し続ける。以前はこれだけに頼っていたため Android で読めなかった)
+    let jsQR;
+    try { jsQR = await loadJsQR(); } catch (e) { fail("読み取りの準備に失敗しました。"); return; }
+    let detector = null;
     if ("BarcodeDetector" in window) {
       try {
-        const detector = new BarcodeDetector({ formats: ["qr_code"] });
-        decode = async (video) => {
+        const formats = BarcodeDetector.getSupportedFormats ? await BarcodeDetector.getSupportedFormats() : [];
+        if (formats.includes("qr_code")) detector = new BarcodeDetector({ formats: ["qr_code"] });
+      } catch (e) { detector = null; }
+    }
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    let frame = 0;
+    const decode = async (video) => {
+      const w = video.videoWidth, h = video.videoHeight;
+      if (!w || !h || video.readyState < 2) return null;
+      if (detector) {
+        try {
           const codes = await detector.detect(video);
-          return codes && codes.length ? codes[0].rawValue : null;
-        };
-      } catch (e) { decode = null; }
-    }
-    if (!decode) {
-      let jsQR;
-      try { jsQR = await loadJsQR(); } catch (e) { fail("読み取りの準備に失敗しました。"); return; }
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      decode = async (video) => {
-        const w = video.videoWidth, h = video.videoHeight;
-        if (!w || !h) return null;
-        // 処理を軽くするため、長辺640pxに縮小して解析する
-        const scale = Math.min(1, 640 / Math.max(w, h));
-        canvas.width = Math.round(w * scale);
-        canvas.height = Math.round(h * scale);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-        return code ? code.data : null;
-      };
-    }
+          if (codes && codes.length && codes[0].rawValue) return codes[0].rawValue;
+        } catch (e) { detector = null; } // 一度でも失敗したら以後は jsQR だけで読む
+      }
+      // 画面中央(読み取り枠のあたり)を正方形に切り出して解析する。
+      // 全体を縮小すると高画素のカメラでQRが小さくつぶれるため、中央を大きめに使う。
+      // 1回おきに「中央の切り出し」と「全体」を交互に試す(QRを枠から外して映した場合にも対応)
+      frame++;
+      const side = Math.min(w, h);
+      const crop = frame % 2 === 1 ? Math.round(side * 0.8) : side;
+      const sx = Math.round((w - crop) / 2), sy = Math.round((h - crop) / 2);
+      const size = Math.min(720, crop);
+      canvas.width = size;
+      canvas.height = size;
+      ctx.drawImage(video, sx, sy, crop, crop, 0, 0, size, size);
+      const img = ctx.getImageData(0, 0, size, size);
+      const code = jsQR(img.data, size, size, { inversionAttempts: "attemptBoth" });
+      return code && code.data ? code.data : null;
+    };
     let stream = null;
     let stopped = false;
     const video = el("video", { playsinline: "true", muted: "true", autoplay: "true" }, []);
@@ -2065,7 +2078,8 @@ const CONFIG = {
     ]);
     document.body.appendChild(overlay);
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      // 背面カメラを、QRが潰れない程度の解像度で要求する(端末が対応しない値は自動で近い値になる)
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
       video.srcObject = stream;
       await video.play();
     } catch (e) {
