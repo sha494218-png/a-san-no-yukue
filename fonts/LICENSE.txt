@@ -1,8 +1,11 @@
 このフォルダのフォントについて
 
-- NotoSansJP-Variable.woff2  (Noto Sans JP)
-- NotoSerifJP-Variable.woff2 (Noto Serif JP)
+- notosansjp_1〜6.woff2  (Noto Sans JP 可変フォント・太さ100〜900)
+- notoserifjp_1〜6.woff2 (Noto Serif JP 可変フォント・太さ200〜900)
 
 いずれも Google の Noto フォントで、SIL Open Font License, Version 1.1 のもとで配布されています。
 ライセンス全文: https://openfontlicense.org/open-font-license-official-text/
 配布元: https://fonts.google.com/noto/specimen/Noto+Sans+JP / https://fonts.google.com/noto/specimen/Noto+Serif+JP
+
+サイトで使っている文字+ひらがな・カタカナ全部+英数字だけに絞ったもの(Google Fonts で文字を指定して取得、2026-10-16)。
+文字の範囲ごとに6つに分けてあり、index.html の @font-face の unicode-range で必要なものだけ読み込まれる。

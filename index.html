@@ -9,28 +9,26 @@
 /* ==========================================================
    フォント同梱
    端末によって明朝体が無かったりして見た目が揺れないよう、
-   本文で使う2書体は fonts/ に同梱し、相対パスで読み込む(CDN不使用)。
-   同梱フォントは可変フォント(wght 100〜900)なので、ファイルは1つで済む。
-   実際に使っている文字だけに絞ったサブセットなので、CONFIGの文言を
-   大幅に書き換えて新しい漢字を使う場合は、フォントの再生成を検討すること
-   (無くても、その文字だけシステムフォントに自動でフォールバックするので
-   表示が崩れることはない)。
+   本文で使う2書体(Noto Sans JP / Noto Serif JP、SIL OFL)は fonts/ に同梱し、相対パスで読み込む(CDN不使用)。
+   可変フォント(太さ100〜900)を、サイトで使っている文字+ひらがな・カタカナ全部+英数字だけに絞って
+   6つのファイルに分けてある(unicode-range で、画面に出る文字を含むファイルだけが読み込まれる)。
+   2026-10-16 にサイト全体の文字で作り直した(以前の版は後から増えた「ゴ」「ぎ」などが入っておらず、
+   その文字だけ端末のフォントで表示されていた)。CONFIGの文言に新しい漢字を足した場合は再生成すること
+   (無くても、その文字だけ端末のフォントで表示されるので、崩れはしない)。
    メイリオは商用フォントのため同梱していない(システム参照のまま)。
    ========================================================== */
-@font-face{
-  font-family:"Noto Sans JP";
-  font-style:normal;
-  font-weight:100 900;
-  font-display:swap;
-  src:url("fonts/NotoSansJP-Variable.woff2") format("woff2");
-}
-@font-face{
-  font-family:"Noto Serif JP";
-  font-style:normal;
-  font-weight:100 900;
-  font-display:swap;
-  src:url("fonts/NotoSerifJP-Variable.woff2") format("woff2");
-}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_1.woff2") format("woff2");unicode-range: U+20-22, U+28-2a, U+2c-2d, U+2f-32, U+38-39, U+3c-3e, U+43-47, U+49, U+4e-50, U+54-55, U+59, U+61, U+63-6a, U+6c-70, U+72-79, U+3001-3002, U+301c, U+3042, U+3044, U+3046, U+3048, U+304b-305a, U+305d-3060, U+3063-306b, U+306e-3071, U+307f-3080, U+3082, U+3088-308c, U+3092, U+3094, U+3099-309a, U+30a1, U+30a4, U+30a9, U+30b5-30bc, U+30c3, U+30c8-30c9, U+30cf-30d1, U+30d5-30d7, U+30eb, U+30f3, U+4e0d, U+4eba, U+4f53, U+4f7f, U+518d, U+51fa, U+53ef, U+5408, U+540c, U+5834, U+5909, U+5927, U+5931, U+5b57, U+5b9f, U+5bfe, U+5e45, U+6210, U+63db, U+63fa, U+6587, U+65b0, U+660e, U+66f8, U+671d, U+672b-672c, U+68b1, U+691c, U+6e08, U+6f22, U+7121, U+751f, U+7528, U+76ee, U+76f8, U+771f, U+7aef, U+7d5e, U+8131, U+898b, U+8a00, U+8a0e, U+8aad, U+8e2a, U+8fbc, U+969b, U+96a0;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_2.woff2") format("woff2");unicode-range: U+23, U+25, U+27, U+2b, U+2e, U+33-37, U+3a-3b, U+40, U+42, U+48, U+4a-4d, U+53, U+56, U+62, U+6b, U+71, U+7a-7b, U+7d, U+300c-300d, U+3059-305c, U+3068-3069, U+306f-3071, U+3078-307e, U+3081, U+3084, U+308f, U+3093, U+3099-309a, U+30a2, U+30a6, U+30aa, U+30af-30b0, U+30b3-30b6, U+30b9-30ba, U+30bf-30c0, U+30c6-30c7, U+30ce-30e1, U+30e7, U+30e9-30ea, U+30ec-30ed, U+30f4, U+30fb-30fc, U+4e0a-4e0b, U+4e26, U+4f4e, U+50cf, U+512a, U+5148, U+5165, U+5171, U+5185, U+5206, U+5225, U+529b, U+52d5, U+53c2, U+544a, U+5468, U+5546, U+56f3, U+56fa, U+5728, U+5730, U+5897, U+58a8, U+5916, U+5b9a, U+5c02, U+5c11, U+5d29, U+5f31, U+611f, U+6240, U+624b, U+629c, U+65e5, U+6697, U+66ff, U+6b04, U+6b63, U+6ce2, U+6fc3, U+713c, U+7167, U+7279, U+73fe, U+753b, U+7684, U+76ae, U+793a, U+7b49, U+7d19, U+7dda, U+7e01, U+7f6b, U+7f8a, U+81ea, U+8272, U+82f1, U+8336, U+8584, U+8868, U+88dc, U+89e3, U+8a18, U+8b0e, U+8b66, U+8cea, U+8d64, U+8db3, U+8ffd, U+900f, U+901a, U+904e, U+90e8, U+914d, U+96f2, U+9762, U+98a8, U+98fe, U+9ec4;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_3.woff2") format("woff2");unicode-range: U+41, U+51-52, U+5f, U+d7, U+2014, U+3005, U+3010-3011, U+304d-304e, U+3053-3058, U+305b-305c, U+306d, U+3075-3077, U+308d, U+3099-309a, U+30a3, U+30a8, U+30ab-30ae, U+30b1-30b2, U+30b7-30b8, U+30c1-30c2, U+30c8-30ca, U+30d2-30d4, U+30d8-30dd, U+30e2-30e3, U+30ef, U+30f7, U+4e00, U+4e2d, U+4e57, U+4e8c, U+4ed8, U+4eee, U+4f9d, U+4fdd, U+4fe1, U+5024, U+5143, U+5168, U+516c, U+5186, U+5207, U+5217, U+5230, U+5237, U+524d, U+52dd, U+533a, U+5358, U+5370, U+539f, U+53f3, U+53f7, U+540d, U+554f, U+55b6, U+56de, U+5883, U+58f0, U+592e, U+5965, U+5b58, U+5c0f, U+5c90, U+5ddd, U+5de6, U+5dee, U+5f37, U+5f53, U+5fc5, U+5fdc, U+6027, U+610f, U+614b, U+62e1, U+6301, U+6307, U+6357, U+63cf-63d0, U+6599, U+65b9, U+666f, U+6700, U+672a, U+6790, U+679a, U+6848, U+69cb, U+69d8, U+6bb5, U+6bd4, U+6c7a, U+6d41, U+6df7, U+6e2c, U+6f14, U+70b9, U+7269, U+72b6, U+72ec, U+7387, U+754c, U+756a, U+767d, U+7740, U+78ba, U+79fb, U+7a3f, U+7acb, U+7b54, U+7b87, U+7b97, U+7bb1, U+7d30, U+7d42, U+7de8, U+7e26, U+7e2e, U+7f6e, U+80cc, U+8449, U+884c, U+8981, U+8996, U+89a7, U+8a8d, U+8a9e, U+8abf, U+8cc7, U+8eab, U+8ee2, U+8f09, U+9001, U+9032, U+904b, U+9055, U+91cd, U+96c6, U+96e2, U+9806, U+983c, U+984c, U+985e, U+ff1f;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_4.woff2") format("woff2");unicode-range: U+57, U+5b-5d, U+2026, U+2192, U+25a0, U+25cb, U+3000, U+304a, U+304f-3050, U+305d-305e, U+3072-3073, U+3075-3076, U+3078-3079, U+3087, U+3099, U+30b1-30b2, U+30bd-30c0, U+30cb, U+30cd, U+30d2-30d3, U+30d8-30d9, U+30db-30dc, U+4e09, U+4e3b, U+4ea4, U+4eca-4ecb, U+4ed5-4ed6, U+4f1d, U+4f55, U+4f5c, U+5075, U+5208, U+5224, U+523a, U+5247, U+5272, U+52a0, U+53cd, U+53d6-53d7, U+5404, U+5411, U+542b, U+56f2, U+5712, U+578b, U+57cb, U+5831, U+592a, U+59cb, U+5b66, U+5b8c, U+5b98, U+5c71, U+5ca9, U+5de1, U+5e30, U+5ea6, U+5ec3, U+5f62, U+5f8c, U+5f97, U+6016, U+601d, U+604b, U+60c5, U+62e0, U+639b, U+63a2, U+63b2, U+6559, U+656c, U+6570, U+6620, U+6642, U+66f4, U+6708, U+677f, U+67a0, U+6841, U+6982, U+6a2a, U+6b21, U+6b62, U+6b69, U+6bdb, U+6c17, U+6cd5, U+6e21, U+6e96, U+7248, U+7406, U+7530, U+7533, U+76f4, U+7701, U+770b, U+773a, U+77e2, U+7881, U+793c, U+796d, U+79d1, U+7a2e, U+7a74, U+7a7a, U+7b2c, U+7b46, U+7d39, U+7d44, U+7d50, U+7d61, U+7d9a, U+7dd1-7dd2, U+8003, U+8005, U+8089, U+80fd, U+82d7, U+8861, U+88cf, U+8a2d, U+8a3c, U+8a72, U+8ab0, U+8ac7, U+8cbc, U+8de1, U+8ecc, U+8fd1, U+8fd4, U+9023, U+9589, U+958b, U+9593, U+9632, U+9664, U+9752, U+975e, U+9810, U+9999, U+ff01, U+ff1a, U+ff1d, U+1f693;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_5.woff2") format("woff2");unicode-range: U+24, U+26, U+3f, U+5e, U+7c, U+2010, U+2013, U+2190, U+2212, U+3051-3052, U+3061-3062, U+3064-3065, U+306f-3074, U+307b-307d, U+3083, U+3085-3086, U+3099-309a, U+30a7, U+30e5, U+30f6, U+4e8b, U+4e92, U+4ee3, U+4ee5, U+4ef2, U+4ef6, U+4efb, U+4f1a, U+4f4d, U+4f8b, U+4fc2, U+5019, U+5076, U+5099, U+5199, U+51e6, U+521d, U+524a, U+52a9, U+5316, U+534a, U+53bb, U+53ce, U+53e4, U+5438-5439, U+552f, U+571f, U+58ca, U+5948, U+59ff, U+5b50, U+5b88, U+5bb9, U+5bdb, U+5bdf, U+5c45, U+5c4a, U+5c5e, U+5c65, U+5e38, U+5e74, U+5e81, U+5f79, U+5f85, U+5f93, U+5ff5, U+6075, U+623b, U+6271, U+62bc, U+62fe, U+631f, U+632f, U+6368, U+63a5, U+63a8, U+64cd, U+654f, U+6551, U+6557, U+65e9, U+6628, U+6709, U+6728, U+6761, U+6765, U+679c, U+6b74, U+6b8b, U+6c34, U+6c38, U+6c42, U+6cb3, U+6ce8, U+6d3e, U+6d88, U+6f70, U+706b, U+7136, U+7531, U+767b, U+77ac, U+77e5, U+7a0b, U+7a4d, U+7d20, U+7d4c, U+7d76, U+7dcf, U+7f72, U+7fa9, U+81f4, U+843d, U+88c5, U+8907, U+898f, U+89d2, U+8a2a, U+8a31, U+8a66, U+8aac, U+8d77, U+8def, U+8fbf, U+9006, U+9020, U+9078, U+91d1, U+91dd, U+9332, U+9577, U+9580, U+95a2, U+968e, U+97f3, U+98db, U+99d0, U+9a13, U+9ad8, U+9ce5, U+ff0f-ff10, U+ff49, U+ff4c, U+ff4e-ff4f, U+1f512, U+1f6b6;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_1.woff2") format("woff2");unicode-range: U+20-22, U+28-2a, U+2c-2d, U+2f-32, U+38-39, U+3c-3e, U+43-47, U+49, U+4e-50, U+54-55, U+59, U+61, U+63-6a, U+6c-70, U+72-79, U+3001-3002, U+301c, U+3042, U+3044, U+3046, U+3048, U+304b-305a, U+305d-3060, U+3063-306b, U+306e-3071, U+307f-3080, U+3082, U+3088-308c, U+3092, U+3094, U+3099-309a, U+30a1, U+30a4, U+30a9, U+30b5-30bc, U+30c3, U+30c8-30c9, U+30cf-30d1, U+30d5-30d7, U+30eb, U+30f3, U+4e0d, U+4eba, U+4f53, U+4f7f, U+518d, U+51fa, U+53ef, U+5408, U+540c, U+5834, U+5909, U+5927, U+5931, U+5b57, U+5b9f, U+5bfe, U+5e45, U+6210, U+63db, U+63fa, U+6587, U+65b0, U+660e, U+66f8, U+671d, U+672b-672c, U+68b1, U+691c, U+6e08, U+6f22, U+7121, U+751f, U+7528, U+76ee, U+76f8, U+771f, U+7aef, U+7d5e, U+8131, U+898b, U+8a00, U+8a0e, U+8aad, U+8e2a, U+8fbc, U+969b, U+96a0;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_2.woff2") format("woff2");unicode-range: U+23, U+25, U+27, U+2b, U+2e, U+33-37, U+3a-3b, U+40, U+42, U+48, U+4a-4d, U+53, U+56, U+62, U+6b, U+71, U+7a-7b, U+7d, U+300c-300d, U+3059-305c, U+3068-3069, U+306f-3071, U+3078-307e, U+3081, U+3084, U+308f, U+3093, U+3099-309a, U+30a2, U+30a6, U+30aa, U+30af-30b0, U+30b3-30b6, U+30b9-30ba, U+30bf-30c0, U+30c6-30c7, U+30ce-30e1, U+30e7, U+30e9-30ea, U+30ec-30ed, U+30f4, U+30fb-30fc, U+4e0a-4e0b, U+4e26, U+4f4e, U+50cf, U+512a, U+5148, U+5165, U+5171, U+5185, U+5206, U+5225, U+529b, U+52d5, U+53c2, U+544a, U+5468, U+5546, U+56f3, U+56fa, U+5728, U+5730, U+5897, U+58a8, U+5916, U+5b9a, U+5c02, U+5c11, U+5d29, U+5f31, U+611f, U+6240, U+624b, U+629c, U+65e5, U+6697, U+66ff, U+6b04, U+6b63, U+6ce2, U+6fc3, U+713c, U+7167, U+7279, U+73fe, U+753b, U+7684, U+76ae, U+793a, U+7b49, U+7d19, U+7dda, U+7e01, U+7f6b, U+7f8a, U+81ea, U+8272, U+82f1, U+8336, U+8584, U+8868, U+88dc, U+89e3, U+8a18, U+8b0e, U+8b66, U+8cea, U+8d64, U+8db3, U+8ffd, U+900f, U+901a, U+904e, U+90e8, U+914d, U+96f2, U+9762, U+98a8, U+98fe, U+9ec4;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_3.woff2") format("woff2");unicode-range: U+41, U+51-52, U+5f, U+d7, U+2014, U+3005, U+3010-3011, U+304d-304e, U+3053-3058, U+305b-305c, U+306d, U+3075-3077, U+308d, U+3099-309a, U+30a3, U+30a8, U+30ab-30ae, U+30b1-30b2, U+30b7-30b8, U+30c1-30c2, U+30c8-30ca, U+30d2-30d4, U+30d8-30dd, U+30e2-30e3, U+30ef, U+30f7, U+4e00, U+4e2d, U+4e57, U+4e8c, U+4ed8, U+4eee, U+4f9d, U+4fdd, U+4fe1, U+5024, U+5143, U+5168, U+516c, U+5186, U+5207, U+5217, U+5230, U+5237, U+524d, U+52dd, U+533a, U+5358, U+5370, U+539f, U+53f3, U+53f7, U+540d, U+554f, U+55b6, U+56de, U+5883, U+58f0, U+592e, U+5965, U+5b58, U+5c0f, U+5c90, U+5ddd, U+5de6, U+5dee, U+5f37, U+5f53, U+5fc5, U+5fdc, U+6027, U+610f, U+614b, U+62e1, U+6301, U+6307, U+6357, U+63cf-63d0, U+6599, U+65b9, U+666f, U+6700, U+672a, U+6790, U+679a, U+6848, U+69cb, U+69d8, U+6bb5, U+6bd4, U+6c7a, U+6d41, U+6df7, U+6e2c, U+6f14, U+70b9, U+7269, U+72b6, U+72ec, U+7387, U+754c, U+756a, U+767d, U+7740, U+78ba, U+79fb, U+7a3f, U+7acb, U+7b54, U+7b87, U+7b97, U+7bb1, U+7d30, U+7d42, U+7de8, U+7e26, U+7e2e, U+7f6e, U+80cc, U+8449, U+884c, U+8981, U+8996, U+89a7, U+8a8d, U+8a9e, U+8abf, U+8cc7, U+8eab, U+8ee2, U+8f09, U+9001, U+9032, U+904b, U+9055, U+91cd, U+96c6, U+96e2, U+9806, U+983c, U+984c, U+985e, U+ff1f;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_4.woff2") format("woff2");unicode-range: U+57, U+5b-5d, U+2026, U+2192, U+25a0, U+25cb, U+3000, U+304a, U+304f-3050, U+305d-305e, U+3072-3073, U+3075-3076, U+3078-3079, U+3087, U+3099, U+30b1-30b2, U+30bd-30c0, U+30cb, U+30cd, U+30d2-30d3, U+30d8-30d9, U+30db-30dc, U+4e09, U+4e3b, U+4ea4, U+4eca-4ecb, U+4ed5-4ed6, U+4f1d, U+4f55, U+4f5c, U+5075, U+5208, U+5224, U+523a, U+5247, U+5272, U+52a0, U+53cd, U+53d6-53d7, U+5404, U+5411, U+542b, U+56f2, U+5712, U+578b, U+57cb, U+5831, U+592a, U+59cb, U+5b66, U+5b8c, U+5b98, U+5c71, U+5ca9, U+5de1, U+5e30, U+5ea6, U+5ec3, U+5f62, U+5f8c, U+5f97, U+6016, U+601d, U+604b, U+60c5, U+62e0, U+639b, U+63a2, U+63b2, U+6559, U+656c, U+6570, U+6620, U+6642, U+66f4, U+6708, U+677f, U+67a0, U+6841, U+6982, U+6a2a, U+6b21, U+6b62, U+6b69, U+6bdb, U+6c17, U+6cd5, U+6e21, U+6e96, U+7248, U+7406, U+7530, U+7533, U+76f4, U+7701, U+770b, U+773a, U+77e2, U+7881, U+793c, U+796d, U+79d1, U+7a2e, U+7a74, U+7a7a, U+7b2c, U+7b46, U+7d39, U+7d44, U+7d50, U+7d61, U+7d9a, U+7dd1-7dd2, U+8003, U+8005, U+8089, U+80fd, U+82d7, U+8861, U+88cf, U+8a2d, U+8a3c, U+8a72, U+8ab0, U+8ac7, U+8cbc, U+8de1, U+8ecc, U+8fd1, U+8fd4, U+9023, U+9589, U+958b, U+9593, U+9632, U+9664, U+9752, U+975e, U+9810, U+9999, U+ff01, U+ff1a, U+ff1d, U+1f693;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_5.woff2") format("woff2");unicode-range: U+24, U+26, U+3f, U+5e, U+7c, U+2010, U+2013, U+2190, U+2212, U+3051-3052, U+3061-3062, U+3064-3065, U+306f-3074, U+307b-307d, U+3083, U+3085-3086, U+3099-309a, U+30a7, U+30e5, U+30f6, U+4e8b, U+4e92, U+4ee3, U+4ee5, U+4ef2, U+4ef6, U+4efb, U+4f1a, U+4f4d, U+4f8b, U+4fc2, U+5019, U+5076, U+5099, U+5199, U+51e6, U+521d, U+524a, U+52a9, U+5316, U+534a, U+53bb, U+53ce, U+53e4, U+5438-5439, U+552f, U+571f, U+58ca, U+5948, U+59ff, U+5b50, U+5b88, U+5bb9, U+5bdb, U+5bdf, U+5c45, U+5c4a, U+5c5e, U+5c65, U+5e38, U+5e74, U+5e81, U+5f79, U+5f85, U+5f93, U+5ff5, U+6075, U+623b, U+6271, U+62bc, U+62fe, U+631f, U+632f, U+6368, U+63a5, U+63a8, U+64cd, U+654f, U+6551, U+6557, U+65e9, U+6628, U+6709, U+6728, U+6761, U+6765, U+679c, U+6b74, U+6b8b, U+6c34, U+6c38, U+6c42, U+6cb3, U+6ce8, U+6d3e, U+6d88, U+6f70, U+706b, U+7136, U+7531, U+767b, U+77ac, U+77e5, U+7a0b, U+7a4d, U+7d20, U+7d4c, U+7d76, U+7dcf, U+7f72, U+7fa9, U+81f4, U+843d, U+88c5, U+8907, U+898f, U+89d2, U+8a2a, U+8a31, U+8a66, U+8aac, U+8d77, U+8def, U+8fbf, U+9006, U+9020, U+9078, U+91d1, U+91dd, U+9332, U+9577, U+9580, U+95a2, U+968e, U+97f3, U+98db, U+99d0, U+9a13, U+9ad8, U+9ce5, U+ff0f-ff10, U+ff49, U+ff4c, U+ff4e-ff4f, U+1f512, U+1f6b6;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 
 /* ==========================================================
    デザイントークン
@@ -513,6 +511,7 @@ body::before{display:none;}
 .diary-entry{margin-bottom:18px;}
 /* 原稿で書体が違う文字(明朝の中にだけ細いゴシックで混ぜる。目立たせすぎない) */
 .diary-box .diary-alt{font-family:var(--gothic);font-weight:300;}
+.diary-box .diary-alt-img{height:1.08em;vertical-align:-0.2em;}
 .diary-entry:last-child{margin-bottom:0;}
 .diary-box p.diary-date{font-family:var(--gothic);font-size:13px;font-weight:800;letter-spacing:0.08em;color:var(--ink-2);margin:0 0 4px;}
 .diary-box.diary-box-horizontal .diary-entry p{margin:0;}
@@ -619,7 +618,7 @@ const CONFIG = {
   clientNameFont: "meiryo",
   // 依頼人のフルネーム。衡山毛筆フォント(無料・商用可。読みやすさ優先で行書版から変更)で書き出した画像で表示する(スマホでも同じ見た目になるよう画像にしている)
   clientName: "小岩香苗",
-  clientNameImage: "images/name_koiwa.png",
+  clientNameImage: "images/name_koiwa.png?v=3", // 画像を差し替えたら ?v= の数字を上げる(スマホに残った古い画像を使わせないため)
 
   // 分岐の合言葉は廃止(真相の場所は参加者が現地で読み取り、最後の「小岩さんに伝える場所」で判定する)
   branchCodes: {},
@@ -851,6 +850,8 @@ const CONFIG = {
       diaryReveal: {
         before: "ファイルを開くと、流川さんの日記が入っていた。",
         horizontal: true, // 横書きで表示(縦書き切り替えボタンは出さない)
+        // 書体を変える文字は、小岩さんの名前と同じ「衡山毛筆フォント」で書き出した画像で表示する(1文字=1emの枠)
+        altImages: { "ぶ": "images/diary_bu.png?v=3", "ど": "images/diary_do.png?v=3", "う": "images/diary_u.png?v=3", "文字": "images/diary_moji.png?v=3" },
         entries: [
           { date: "■○月○日", text: "　サークル帰りに一人で歩いていたとき、ずっと後ろをつけてきている人がいた気がした。さすがに気のせいだろうけど怖くなってしばらくコンビニで時間をつ{{ぶ}}した。サスペンスの見過ぎだな。肉まんはおいしかった。" },
           { date: "■○月○日", text: "　今日も後ろに誰かいた気がした。ストーカーか…？　昨日のことで少し敏感になり過ぎているだけだろうか。でも確かにいた気がした。ちょっと怖いな。" },
@@ -1544,7 +1545,7 @@ const CONFIG = {
       if (needsArrival(s)) {
         // マップ謎: 正解したら、その場所へ行ってキーワードを入力するまで先へ進めない
         card.appendChild(el("div", { class: "arrival-panel" }, [
-          renderInstruction((s.arrivalPlace || "謎が示す場所") + "へ向かえ。", "指示"),
+          renderInstruction((s.arrivalPlace || "謎が示す場所") + "へ\n向かえ。", "指示"), // 読みやすいよう「へ」の後で改行
           el("p", { class: "arrival-panel-text" }, ["着いたら、その場所にあるキーワードを入力してください。入力すると、次の謎が開きます。"]),
           renderArrivalCheck(Object.assign({}, s, { arrivalLabel: s.arrivalLabel || "その場所にあるキーワード" }), s.id + ":arrived"),
         ]));
@@ -1691,7 +1692,10 @@ const CONFIG = {
     // {{x}} で囲んだ部分だけ別の書体(span.diary-alt)にする
     const withAlt = (text) => text.split(/(\{\{[^}]*\}\})/).filter(Boolean).map((part) => {
       const m = part.match(/^\{\{([^}]*)\}\}$/);
-      return m ? el("span", { class: "diary-alt" }, [m[1]]) : part;
+      if (!m) return part;
+      // 書体を変える文字の画像があれば画像で(小岩さんの名前と同じ衡山毛筆フォントで書き出したもの)、無ければ別書体の文字で
+      const src = d.altImages && d.altImages[m[1]];
+      return src ? el("img", { class: "diary-alt-img", src, alt: m[1], style: "width:" + m[1].length + "em" }) : el("span", { class: "diary-alt" }, [m[1]]);
     });
     const paras = d.entries
       ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, withAlt(en.text))]))
@@ -1802,7 +1806,7 @@ const CONFIG = {
   // key: 到着済みを記録する state.solved のキー(移動シーンは自分のID、謎は「ID:arrived」)
   function renderArrivalCheck(s, key) {
     const feedback = el("div", { class: "feedback" }, [""]);
-    const input = el("input", { type: "text", placeholder: s.arrivalLabel || "現地の合言葉", "aria-label": s.arrivalLabel || "現地の合言葉" });
+    const input = el("input", { type: "text", placeholder: "キーワード", "aria-label": s.arrivalLabel || "現地のキーワード" });
     const submit = () => {
       if (matchAny(input.value, s.arrivalCodes)) {
         state.solved[key || s.id] = true;
