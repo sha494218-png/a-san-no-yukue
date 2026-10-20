@@ -128,7 +128,7 @@ diaryReveal: {
 ```js
 const SCENE_GRID_CELL = {
   puzzle_poster: null, // かるたサークルのポスター前 →【要記入】設置場所が決まったらマス番号に置き換える
-  puzzle_koban: null,  // 特設交番 →【要記入】
+  puzzle_koban: null,  // 出張交番 →【要記入】
 };
 ```
 
@@ -276,7 +276,7 @@ Noto Serif JP / Noto Sans JP(オープンライセンス、可変フォント)�
 | 場所 | 設置するもの |
 |---|---|
 | かるたサークルのポスター前 | ポスター(謎6・謎10用) |
-| 特設交番 | アナグラム資料(謎8)、合言葉の手がかりなど、**到着確認の合言葉**(仮: 「到着」。`move_koban` の `arrivalCodes` で変更) |
+| 出張交番 | アナグラム資料(謎8)、合言葉の手がかりなど、**到着確認の合言葉**(仮: 「到着」。`move_koban` の `arrivalCodes` で変更) |
 | ライオンの場所 | `LIONCODE` の合言葉掲示 |
 | NO17の場所 | `NO17CODE` の合言葉掲示 |
 
