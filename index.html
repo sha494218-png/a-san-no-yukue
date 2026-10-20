@@ -761,7 +761,7 @@ const CONFIG = {
         "「したみ」は「下・み」。「み」の真下にあるマスを、上から順に読んでみましょう。",
         "答え：うさぎ",
       ],
-      reward: { label: "「うさぎ」の場所：{{刈田|かりた}}の情報", detail: "地図の「うさぎ」の場所に、{{刈田|かりた}}という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
+      reward: { label: "「うさぎ」の場所：{{刈田|かるた}}の情報", detail: "地図の「うさぎ」の場所に、{{刈田|かるた}}という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
       arrivalPlace: "地図の「うさぎ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -775,7 +775,7 @@ const CONFIG = {
         "1つ目の図形の組は「エリ」と読めます。同じ考え方で2つ目を読んでみましょう。",
         "答え：ゴリラ",
       ],
-      reward: { label: "「ゴリラ」の場所：{{刈田|かりた}}の情報(2)", detail: "地図の「ゴリラ」の場所に、{{刈田|かりた}}についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
+      reward: { label: "「ゴリラ」の場所：{{刈田|かるた}}の情報(2)", detail: "地図の「ゴリラ」の場所に、{{刈田|かるた}}についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
       arrivalPlace: "地図の「ゴリラ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -1384,7 +1384,7 @@ const CONFIG = {
   //   {{依頼人}}       … 依頼人の名前画像(毛筆)
   //   {{流川透太}}     … CONFIG.nameImages に登録した名前画像(毛筆)
   //   上の2つに「|よみ」を付けると読み仮名を振る(例: {{流川透太|るかわ とうた}})
-  //   {{刈田|かりた}}  … 普通の文字に読み仮名を振る(人物が初めて出てくるところで使う)
+  //   {{刈田|かるた}}  … 普通の文字に読み仮名を振る(人物が初めて出てくるところで使う)
   function withClientName(text) {
     const ruby = (base, reading) => (reading ? el("ruby", { class: "name-ruby" }, [base, el("rt", null, [reading])]) : base);
     return String(text).split(/(\{\{[^}]+\}\})/).filter(Boolean).map((part) => {
