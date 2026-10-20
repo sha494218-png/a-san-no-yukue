@@ -269,7 +269,7 @@ input{font-family:inherit;}
 .skip-row{margin-top:16px;text-align:center;}
 .skip-row button{background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:8px;min-height:44px;}
 
-/* ---------- マップ謎など、順不同で解ける謎のハブ画面 ---------- */
+/* ---------- マップの謎など、順不同で解ける謎のハブ画面 ---------- */
 .hub-wrap{padding:22px 0;}
 .hub-wrap h2{font-family:var(--mincho);font-size:21px;font-weight:800;text-align:center;margin:0 0 10px;}
 .hub-wrap h2::before{content:"EVIDENCE FILES";display:block;font-family:var(--type);font-size:11px;letter-spacing:0.25em;color:var(--stamp);margin-bottom:4px;}
@@ -521,7 +521,7 @@ body::before{display:none;}
 /* 指示文の下の画像(ポスターの謎) */
 .move-emphasis-image{width:100%;margin:4px 0 6px;}
 .move-emphasis-image .puzzle-image-caption{margin-top:-8px;}
-/* マップ謎: 解いたあとのキーワード入力欄 */
+/* マップの謎: 解いたあとのキーワード入力欄 */
 .arrival-panel{margin-top:16px;padding-top:4px;}
 .arrival-panel-text{font-size:14px;line-height:1.8;margin:0 0 12px;}
 .hub-card.pending .hub-status{background:var(--stamp);color:#fff;}
@@ -543,6 +543,19 @@ body::before{display:none;}
 /* 読み仮名(初めて出てくる人物) */
 ruby.name-ruby rt{font-size:0.55em;font-weight:500;letter-spacing:0.05em;color:var(--muted);}
 .chat-bubble ruby.name-ruby{ruby-position:over;}
+/* 手がかり一覧: 日記の本文と画像(タップで全画面) */
+.clue-diary{margin-top:8px;cursor:zoom-in;}
+.clue-diary .diary-box{margin:0;}
+.diary-box.diary-box-preview{max-height:260px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,#000 70%,transparent);mask-image:linear-gradient(to bottom,#000 70%,transparent);}
+.clue-item .review-img{margin-top:8px;}
+.clue-item img.diary-alt-img{border:none;margin:0;cursor:inherit;}
+.clue-tap-note{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+/* 日記を全画面で読む */
+#lightbox.text-reader{background:var(--bg);overflow-y:auto;touch-action:auto;-webkit-overflow-scrolling:touch;}
+#lightbox.text-reader .text-reader-inner{padding:calc(var(--safe-t) + 64px) 16px calc(var(--safe-b) + 32px);max-width:640px;margin:0 auto;}
+#lightbox.text-reader h3{font-family:var(--mincho);font-size:18px;margin:0 0 12px;color:var(--ink);}
+#lightbox.text-reader .diary-box p:not(.diary-date){font-size:18px;line-height:2;}
+#lightbox.text-reader .lb-close{background:var(--ink);}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -702,7 +715,7 @@ const CONFIG = {
     },
 
     // ============================================================
-    // マップ謎(4問・順不同)
+    // マップの謎(4問・順不同)
     // 4問はどの順番でも解けるハブ画面(map_hub)から出入りする。
     // 問題は画像だけで伝わるので、各謎の問題文(prompt)は空にしてある。
     // ポスター1枚目は現地のポスターのみで完結するため、サイトには解答欄を置かない。
@@ -738,7 +751,7 @@ const CONFIG = {
     // 【要確定】どの謎の場所でどの情報が得られるかの対応は、シナリオの記載順に仮で割り当てています。
     // 1問解くとその場所のキーワード入力画面になり、入力するまで他の謎は開かない(一気に解かれるのを防ぐ)。
     {
-      id: "puzzle_map1", type: "puzzle", heading: "マップ謎", optional: false,
+      id: "puzzle_map1", type: "puzzle", heading: "マップの謎", optional: false,
       image: "images/map_apple.webp", imageAlt: "反省+囲碁+理科の謎",
       prompt: "",
       answers: ["りんご"], inputMode: "text", maxLength: 20,
@@ -752,7 +765,7 @@ const CONFIG = {
       destination: null, next: "map_hub",
     },
     {
-      id: "puzzle_map2", type: "puzzle", heading: "マップ謎", optional: false,
+      id: "puzzle_map2", type: "puzzle", heading: "マップの謎", optional: false,
       image: "images/map_rabbit.webp", imageAlt: "うえき=くさばな のマス目の謎",
       prompt: "",
       answers: ["うさぎ"], inputMode: "text", maxLength: 20,
@@ -766,7 +779,7 @@ const CONFIG = {
       destination: null, next: "map_hub",
     },
     {
-      id: "puzzle_map3", type: "puzzle", heading: "マップ謎", optional: false,
+      id: "puzzle_map3", type: "puzzle", heading: "マップの謎", optional: false,
       image: "images/map_gorilla.webp", imageAlt: "直線でできた図形の謎",
       prompt: "",
       answers: ["ゴリラ"], inputMode: "text", maxLength: 20,
@@ -780,7 +793,7 @@ const CONFIG = {
       destination: null, next: "map_hub",
     },
     {
-      id: "puzzle_map4", type: "puzzle", heading: "マップ謎", optional: false,
+      id: "puzzle_map4", type: "puzzle", heading: "マップの謎", optional: false,
       image: "images/map_bird.webp", imageAlt: "重なった図形の謎",
       prompt: "",
       answers: ["トリ"], inputMode: "text", maxLength: 20,
@@ -830,7 +843,7 @@ const CONFIG = {
       prompt: "掲示板の謎と組み合わせて解け。",
       answers: ["215"], inputMode: "numeric", maxLength: 3,
       hints: [
-        "ゴリラ・トリ・うさぎは、マップ謎の答え。それぞれの謎で使った仕掛けを、掲示板の謎にもう一度使ってみよう。",
+        "ゴリラ・トリ・うさぎは、マップの謎の答え。それぞれの謎で使った仕掛けを、掲示板の謎にもう一度使ってみよう。",
         "掲示板の左の直線はゴリラの謎(線を文字として読む)、真ん中の図形はトリの謎(重なりを分ける)、右の文はうさぎの謎(「うえき＝上・き」のように読み替える)と同じ考え方で数字にしよう。",
         "答え：215",
       ],
@@ -880,8 +893,9 @@ const CONFIG = {
       ],
       reward: {
         label: "流川さんの日記を入手",
-        detail: "ファイルの中身は流川さんの日記だった。\n後ろをつけてくるストーカーがいること、しばらく身を隠すことが書かれていた。\n最後の日付には「大学内にポスターを設置した。設置場所は文字を読めばわかる。」とある。",
+        detail: "ファイルの中身は流川さんの日記だった。",
         kind: "diary",
+        ref: "puzzle_file", // 手がかり一覧でこの謎の日記(diaryReveal)の本文を表示する
       },
       // 流川さんの日記(元原稿: images/日記.webp)。横書きで、日付ごとに区切って表示する。
       // {{文字}} で囲んだ文字だけ書体を変えて表示する(原稿 シナリオ/日記.docx で HG教科書体 になっている文字。順に読むと「ぶどう」)
@@ -1190,8 +1204,9 @@ const CONFIG = {
   window.addEventListener("popstate", (e) => {
     // 手がかり一覧などのシート、画像拡大表示が開いていれば、「戻る」はまずそれを閉じるだけに使う
     if (sheetEls || lb) {
-      closeSheetIfOpen();
-      closeLightbox();
+      // 一番上に開いているものだけを閉じる(手がかり一覧の上で拡大表示を開いた場合、「戻る」1回で拡大表示だけ閉じる)
+      if (lb) closeLightbox();
+      else closeSheetIfOpen();
       return;
     }
     const sceneId = e.state && e.state.sceneId;
@@ -1207,12 +1222,15 @@ const CONFIG = {
     if (!reward) return;
     const list = Array.isArray(reward) ? reward : [reward];
     list.forEach((r) => {
+      // 同じ謎の同じ手がかりは1つだけ(日記を読み返したり、解いた謎を開き直したりしても増えないように)
+      if (state.clues.some((c) => c.label === r.label && c.from === fromLabel)) return;
       state.clues.push({
         label: r.label,
         detail: r.detail || "",
         font: r.font || null,
         kind: r.kind || "doc", // 種類未指定はdocとして扱う
         image: r.image || null,
+        ref: r.ref || null, // 日記などの元になったシーンID(手がかり一覧で本文を表示するため)
         from: fromLabel,
       });
     });
@@ -1585,14 +1603,14 @@ const CONFIG = {
     // lockScreenの有無にかかわらず必ず表示する(でないと問題文の図が見えなくなる)。
     const imgBlock = renderSceneImages(s);
     if (imgBlock) card.appendChild(imgBlock);
-    // 問題文が空の謎(画像だけで伝わるマップ謎など)は、問題文の段落自体を出さない
+    // 問題文が空の謎(画像だけで伝わるマップの謎など)は、問題文の段落自体を出さない
     if (s.prompt) card.appendChild(el("p", { class: "puzzle-prompt" + (s.font === "meiryo" ? " font-meiryo" : "") }, [s.prompt]));
 
     if (state.solved[s.id]) {
       if (lockScreenApi) lockScreenApi.updateDots("0".repeat(s.maxLength || 4));
       card.appendChild(el("div", { class: "feedback ok" }, ["この謎はすでに正解しています。"]));
       if (needsArrival(s)) {
-        // マップ謎: 正解したら、その場所へ行ってキーワードを入力するまで先へ進めない
+        // マップの謎: 正解したら、その場所へ行ってキーワードを入力するまで先へ進めない
         card.appendChild(el("div", { class: "arrival-panel" }, [
           renderInstruction((s.arrivalPlace || "謎が示す場所") + "へ\n向かえ。", "指示"), // 読みやすいよう「へ」の後で改行
           el("p", { class: "arrival-panel-text" }, ["着いたら、その場所にあるキーワードを入力してください。入力すると、次の謎が開きます。"]),
@@ -1687,7 +1705,7 @@ const CONFIG = {
     $app.appendChild(wrap);
   }
 
-  // 解いたあと、現地でキーワードを入力する必要がある謎(マップ謎)で、まだ入力していないか
+  // 解いたあと、現地でキーワードを入力する必要がある謎(マップの謎)で、まだ入力していないか
   function needsArrival(sc) {
     return !!(sc && sc.type === "puzzle" && sc.arrivalCodes && state.solved[sc.id] && !state.solved[sc.id + ":arrived"]);
   }
@@ -1733,23 +1751,44 @@ const CONFIG = {
    * 見えている状態にしておく必要がある(でないと1行目が画面外になる)。
    * 読みづらい参加者のために「横書きで読む」トグルも必ず付ける(状態は保存しない)。
    */
+  // 日記の本文(日付ごとの区切り・書体違いの文字を含む)の箱を作る。日記の場面・手がかり一覧・全画面表示で共通
+  function buildDiaryBox(d) {
+    // {{x}} で囲んだ部分だけ別の書体にする(画像があれば衡山毛筆フォントの画像、無ければ別書体の文字)
+    const withAlt = (text) => text.split(/(\{\{[^}]*\}\})/).filter(Boolean).map((part) => {
+      const m = part.match(/^\{\{([^}]*)\}\}$/);
+      if (!m) return part;
+      const src = d.altImages && d.altImages[m[1]];
+      return src ? el("img", { class: "diary-alt-img", src, alt: m[1], style: "width:" + m[1].length + "em" }) : el("span", { class: "diary-alt" }, [m[1]]);
+    });
+    // entries(日付+本文)があれば日付ごとに区切って表示。無ければ従来の vertical(行の配列)
+    const paras = d.entries
+      ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, withAlt(en.text))]))
+      : d.vertical.map((line) => el("p", null, [line]));
+    return el("div", { class: "diary-box" }, paras);
+  }
+  // 日記を全画面で大きく読む(手がかり一覧から開く)。「戻る」でも閉じられる
+  function openDiaryReader(d, title) {
+    closeLightbox();
+    pushOverlayHistory();
+    const box = buildDiaryBox(d);
+    box.classList.add("diary-box-horizontal");
+    lb = el("div", { id: "lightbox", class: "text-reader" }, [
+      el("div", { class: "text-reader-inner" }, [el("h3", null, [title || "日記"]), box]),
+      el("button", { class: "lb-close", "aria-label": "閉じる", onclick: closeLightbox }, ["×"]),
+    ]);
+    document.body.appendChild(lb);
+  }
+  // 手がかり一覧の日記に対応する日記データ(diaryReveal)を探す
+  function diaryForClue(c) {
+    const sc = (c.ref && scene(c.ref)) || CONFIG.scenes.find((x) => x.diaryReveal);
+    return sc ? sc.diaryReveal : null;
+  }
+
   function showDiaryReveal(s) {
     const d = s.diaryReveal;
     $app.innerHTML = "";
     let vertical = !d.horizontal;
-    // entries(日付+本文)があれば日付ごとに区切って表示。無ければ従来の vertical(行の配列)
-    // {{x}} で囲んだ部分だけ別の書体(span.diary-alt)にする
-    const withAlt = (text) => text.split(/(\{\{[^}]*\}\})/).filter(Boolean).map((part) => {
-      const m = part.match(/^\{\{([^}]*)\}\}$/);
-      if (!m) return part;
-      // 書体を変える文字の画像があれば画像で(小岩さんの名前と同じ衡山毛筆フォントで書き出したもの)、無ければ別書体の文字で
-      const src = d.altImages && d.altImages[m[1]];
-      return src ? el("img", { class: "diary-alt-img", src, alt: m[1], style: "width:" + m[1].length + "em" }) : el("span", { class: "diary-alt" }, [m[1]]);
-    });
-    const paras = d.entries
-      ? d.entries.map((en) => el("div", { class: "diary-entry" }, [el("p", { class: "diary-date" }, [en.date]), el("p", null, withAlt(en.text))]))
-      : d.vertical.map((line) => el("p", null, [line]));
-    const box = el("div", { class: "diary-box" }, paras);
+    const box = buildDiaryBox(d);
     const toggleBtn = el("button", { class: "btn-secondary btn diary-toggle", type: "button" }, ["横書きで読む"]);
     function applyMode() {
       box.classList.toggle("diary-box-horizontal", !vertical);
@@ -2249,7 +2288,17 @@ const CONFIG = {
       list.appendChild(el("div", { class: "empty-note" }, ["まだ手がかりはありません。謎を解くと、ここに記録されていきます。"]));
     } else {
       state.clues.forEach((c) => {
-        const img = c.image ? el("img", { src: c.image, alt: c.label, onclick: () => openLightbox(c.image, c.label) }) : null;
+        // 画像は「謎」の振り返りと同じ見た目で、タップすると全画面で拡大
+        let img = c.image ? el("img", { class: "review-img", src: c.image, alt: c.label, onclick: () => openLightbox(c.image, c.label) }) : null;
+        // 日記は日記の画面と同じ形で本文を出し、タップすると全画面で大きく読める
+        const d = c.kind === "diary" ? diaryForClue(c) : null;
+        if (d) {
+          const box = buildDiaryBox(d);
+          box.classList.add("diary-box-horizontal", "diary-box-preview");
+          img = el("div", { class: "clue-diary", onclick: () => openDiaryReader(d, c.label) }, [box, el("div", { class: "clue-tap-note" }, ["タップで大きく読む"])]);
+        } else if (img) {
+          img = el("div", null, [img, el("div", { class: "clue-tap-note" }, ["タップで拡大"])]);
+        }
         list.appendChild(
           el("div", { class: "clue-item" }, [
             el("div", { class: "clue-item-head" }, [
