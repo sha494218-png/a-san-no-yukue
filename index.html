@@ -532,6 +532,17 @@ body::before{display:none;}
 .chat-name{height:18px;width:auto;margin:0 0 4px 2px;display:block;}
 .inline-name{height:1.35em;width:auto;vertical-align:-0.3em;margin:0 1px;}
 .chat-messages-compact .chat-name{height:13px;}
+/* 解いた謎を振り返る */
+.review-note{font-size:12px;color:var(--muted);margin:0 0 10px;}
+.review-item{background:var(--paper-hi);border:1px solid var(--line-soft);border-left:4px solid var(--ink);padding:10px 12px;margin-bottom:12px;}
+.review-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.review-title{font-weight:800;font-size:14px;}
+.review-answer{flex-shrink:0;font-size:12px;font-weight:700;color:var(--stamp);}
+.review-images{display:flex;flex-direction:column;gap:8px;}
+.review-img{display:block;width:100%;background:#fff;border:1px solid var(--line-soft);cursor:zoom-in;}
+/* 読み仮名(初めて出てくる人物) */
+ruby.name-ruby rt{font-size:0.55em;font-weight:500;letter-spacing:0.05em;color:var(--muted);}
+.chat-bubble ruby.name-ruby{ruby-position:over;}
 .notice-box{margin:0 0 14px;padding:10px 12px;border-left:4px solid var(--stamp);background:var(--paper-hi);font-size:13px;font-weight:700;line-height:1.7;color:var(--stamp);}
 .confirm-box{margin-top:12px;padding:14px;border:1.5px solid var(--stamp);background:var(--paper-hi);}
 .confirm-box p{margin:0 0 12px;font-weight:800;color:var(--stamp);line-height:1.7;}
@@ -562,6 +573,7 @@ body::before{display:none;}
   <button id="btn-clue" type="button">手がかり</button>
   <button id="btn-map" type="button" class="hidden">地図</button>
   <button id="btn-story" type="button" class="hidden">物語</button>
+  <button id="btn-review" type="button" class="hidden">謎</button>
   <button id="btn-hint" type="button" class="hidden">ヒント</button>
   <button id="btn-staff" type="button" class="staff-btn hidden">STAFF</button>
 </div>
@@ -653,9 +665,9 @@ const CONFIG = {
       heading: "小岩さんとのトーク",
       messages: [
         { from: "system", text: "受付で名刺(参加証)を受け取った" },
-        { from: "system", text: "依頼人・小岩さんとのトークが始まりました" },
-        { from: "client", text: "はじめまして、{{依頼人}}と申します。探偵さんにご相談したいことがあります。" },
-        { from: "client", text: "恋人の{{流川透太}}さんと、しばらく連絡が取れていないんです。" },
+        { from: "system", text: "依頼人・{{小岩|こいわ}}さんとのトークが始まりました" },
+        { from: "client", text: "はじめまして、{{依頼人|こいわ かなえ}}と申します。探偵さんにご相談したいことがあります。" },
+        { from: "client", text: "恋人の{{流川透太|るかわ とうた}}さんと、しばらく連絡が取れていないんです。" },
         { from: "client", text: "流川さんが使っていたパソコンを預かっています。中に手がかりがあるかもしれません。" },
         { from: "client", text: "ただ……パスワードがかかっていて、わたしには開けませんでした。" },
         { from: "me", text: "わかりました。パスワードを解いてみます。" },
@@ -749,7 +761,7 @@ const CONFIG = {
         "「したみ」は「下・み」。「み」の真下にあるマスを、上から順に読んでみましょう。",
         "答え：うさぎ",
       ],
-      reward: { label: "「うさぎ」の場所：刈田の情報", detail: "地図の「うさぎ」の場所に、刈田という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
+      reward: { label: "「うさぎ」の場所：{{刈田|かりた}}の情報", detail: "地図の「うさぎ」の場所に、{{刈田|かりた}}という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
       arrivalPlace: "地図の「うさぎ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -763,7 +775,7 @@ const CONFIG = {
         "1つ目の図形の組は「エリ」と読めます。同じ考え方で2つ目を読んでみましょう。",
         "答え：ゴリラ",
       ],
-      reward: { label: "「ゴリラ」の場所：刈田の情報(2)", detail: "地図の「ゴリラ」の場所に、刈田についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
+      reward: { label: "「ゴリラ」の場所：{{刈田|かりた}}の情報(2)", detail: "地図の「ゴリラ」の場所に、{{刈田|かりた}}についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
       arrivalPlace: "地図の「ゴリラ」の場所", arrivalCodes: ["テスト"], // 【仮】現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -1268,6 +1280,8 @@ const CONFIG = {
     $btnMap.classList.toggle("hidden", CONFIG.showMapButton === false || !state.solved["puzzle_pc"]);
     // 物語(story)シーンをひとつでも通過していれば、いつでも読み返せる
     $btnStory.classList.toggle("hidden", state.storyLog.length === 0);
+    // 解いた謎(や見た資料)が1つでもあれば、「謎」ボタンから振り返れる
+    document.getElementById("btn-review").classList.toggle("hidden", reviewItems().length === 0);
     $btnStaff.classList.toggle("hidden", location.hash !== "#staff");
   }
   $btnMap.addEventListener("click", () => openLightbox(CONFIG.mapImage, "地図"));
@@ -1350,7 +1364,7 @@ const CONFIG = {
       return renderInstruction(m.text, m.label);
     }
     if (m.from === "system") {
-      return el("div", { class: "chat-system-note" }, [m.text]);
+      return el("div", { class: "chat-system-note" }, withClientName(m.text));
     }
     const isMe = m.from === "me";
     const bubble = el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, withClientName(m.text));
@@ -1366,14 +1380,20 @@ const CONFIG = {
     if (!CONFIG.clientNameImage) return el("span", { class: cls }, [CONFIG.clientName || ""]);
     return el("img", { class: cls, src: CONFIG.clientNameImage, alt: CONFIG.clientName || "" });
   }
-  // 本文中の {{依頼人}} や {{流川透太}} などを、毛筆の名前画像に置き換える(CONFIG.nameImages に登録した名前)
+  // 文中の書き方(CONFIG の文言で使える):
+  //   {{依頼人}}       … 依頼人の名前画像(毛筆)
+  //   {{流川透太}}     … CONFIG.nameImages に登録した名前画像(毛筆)
+  //   上の2つに「|よみ」を付けると読み仮名を振る(例: {{流川透太|るかわ とうた}})
+  //   {{刈田|かりた}}  … 普通の文字に読み仮名を振る(人物が初めて出てくるところで使う)
   function withClientName(text) {
+    const ruby = (base, reading) => (reading ? el("ruby", { class: "name-ruby" }, [base, el("rt", null, [reading])]) : base);
     return String(text).split(/(\{\{[^}]+\}\})/).filter(Boolean).map((part) => {
-      const m = part.match(/^\{\{([^}]+)\}\}$/);
+      const m = part.match(/^\{\{([^}|]+)(?:\|([^}]+))?\}\}$/);
       if (!m) return part;
-      if (m[1] === "依頼人") return clientNameImg("inline-name");
-      const src = CONFIG.nameImages && CONFIG.nameImages[m[1]];
-      return src ? el("img", { class: "inline-name", src, alt: m[1] }) : m[1];
+      const [, key, reading] = m;
+      if (key === "依頼人") return ruby(clientNameImg("inline-name"), reading);
+      const src = CONFIG.nameImages && CONFIG.nameImages[key];
+      return ruby(src ? el("img", { class: "inline-name", src, alt: key }) : key, reading);
     });
   }
 
@@ -2236,8 +2256,8 @@ const CONFIG = {
               el("div", { class: "clue-from" }, [c.from || ""]),
               el("span", { class: "clue-kind-badge clue-kind-" + (c.kind || "doc") }, [KIND_LABEL[c.kind] || KIND_LABEL.doc]),
             ]),
-            el("div", { class: "clue-label" + (c.font === "meiryo" ? " font-meiryo" : "") }, [c.label]),
-            c.detail ? el("div", { class: "clue-detail" + (c.font === "meiryo" ? " font-meiryo" : "") }, [c.detail]) : null,
+            el("div", { class: "clue-label" + (c.font === "meiryo" ? " font-meiryo" : "") }, withClientName(c.label)),
+            c.detail ? el("div", { class: "clue-detail" + (c.font === "meiryo" ? " font-meiryo" : "") }, withClientName(c.detail)) : null,
             img,
           ])
         );
@@ -2296,6 +2316,56 @@ const CONFIG = {
     document.body.appendChild(sheet);
     sheetEls = [backdrop, sheet];
   }
+
+  /* ============================================================
+   * 解いた謎を振り返る(下部シート)
+   * これまでに解いた謎と、見た資料(指名手配書・ポスターの謎など)を、シナリオの順に一覧にする。
+   * 画像はタップすると全画面で拡大できる(ピンチ・ダブルタップで拡大縮小)。
+   * ============================================================ */
+  function reviewItems() {
+    return CONFIG.scenes.filter((s) => {
+      const imgs = s.images && s.images.length ? s.images : s.image ? [{ src: s.image, alt: s.imageAlt }] : [];
+      if (!imgs.length) return false;
+      if (s.type === "puzzle" || s.type === "final") return !!state.solved[s.id];
+      return !!(state.visited && state.visited[s.id]); // 資料や移動の画面は、一度見たら振り返れる
+    });
+  }
+  function openReviewSheet() {
+    closeSheetIfOpen();
+    pushOverlayHistory();
+    const backdrop = el("div", { class: "sheet-backdrop", onclick: closeSheetIfOpen }, []);
+    const list = el("div", { class: "sheet-body" }, []);
+    const items = reviewItems();
+    if (!items.length) {
+      list.appendChild(el("div", { class: "empty-note" }, ["まだ振り返れる謎はありません。謎を解くと、ここに残っていきます。"]));
+    } else {
+      list.appendChild(el("div", { class: "review-note" }, ["画像をタップすると拡大できます。"]));
+      items.forEach((s) => {
+        const imgs = s.images && s.images.length ? s.images : [{ src: s.image, alt: s.imageAlt }];
+        const isPuzzle = s.type === "puzzle" || s.type === "final";
+        list.appendChild(el("div", { class: "review-item" }, [
+          el("div", { class: "review-head" }, [
+            el("span", { class: "review-title" }, [s.heading]),
+            isPuzzle && s.answers && s.answers.length ? el("span", { class: "review-answer" }, ["答え：" + s.answers[0]]) : null,
+          ]),
+          el("div", { class: "review-images" }, imgs.map((im) =>
+            el("img", { class: "review-img", src: im.src, alt: im.alt || s.heading, loading: "lazy", onclick: () => openLightbox(im.src, im.alt || s.heading) })
+          )),
+        ]));
+      });
+    }
+    const sheet = el("div", { class: "sheet" }, [
+      el("div", { class: "sheet-header" }, [
+        el("h3", null, ["解いた謎を振り返る"]),
+        el("button", { onclick: closeSheetIfOpen, "aria-label": "閉じる" }, ["×"]),
+      ]),
+      list,
+    ]);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+    sheetEls = [backdrop, sheet];
+  }
+  document.getElementById("btn-review").addEventListener("click", openReviewSheet);
 
   document.getElementById("btn-hint").addEventListener("click", () => {
     const s = scene(state.sceneId);
