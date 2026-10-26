@@ -694,7 +694,7 @@ const CONFIG = {
       heading: "パソコンのパスワード",
       optional: false,
       lockScreen: true, // ロック画面ふうの見た目にする
-      image: "images/pc_password.webp",
+      image: "images/pc_password.webp?v=20261026",
       imageAlt: "パソコンのパスワード謎の画像",
       // 最終版(元ファイル: images/パソコン謎_最終.webp)。u→n、6→9 のように180度回すと答えになる
       prompt: "画像の法則を見つけて、3桁の数字を入力してください。",
@@ -752,7 +752,7 @@ const CONFIG = {
     // 1問解くとその場所のキーワード入力画面になり、入力するまで他の謎は開かない(一気に解かれるのを防ぐ)。
     {
       id: "puzzle_map1", type: "puzzle", heading: "マップの謎", optional: false,
-      image: "images/map_apple.webp", imageAlt: "反省+囲碁+理科の謎",
+      image: "images/map_apple.webp?v=20261026", imageAlt: "反省+囲碁+理科の謎",
       prompt: "",
       answers: ["りんご"], inputMode: "text", maxLength: 20,
       hints: [
@@ -766,7 +766,7 @@ const CONFIG = {
     },
     {
       id: "puzzle_map2", type: "puzzle", heading: "マップの謎", optional: false,
-      image: "images/map_rabbit.webp", imageAlt: "うえき=くさばな のマス目の謎",
+      image: "images/map_rabbit.webp?v=20261026", imageAlt: "うえき=くさばな のマス目の謎",
       prompt: "",
       answers: ["うさぎ"], inputMode: "text", maxLength: 20,
       hints: [
@@ -780,7 +780,7 @@ const CONFIG = {
     },
     {
       id: "puzzle_map3", type: "puzzle", heading: "マップの謎", optional: false,
-      image: "images/map_gorilla.webp", imageAlt: "直線でできた図形の謎",
+      image: "images/map_gorilla.webp?v=20261026", imageAlt: "直線でできた図形の謎",
       prompt: "",
       answers: ["ゴリラ"], inputMode: "text", maxLength: 20,
       hints: [
@@ -794,7 +794,7 @@ const CONFIG = {
     },
     {
       id: "puzzle_map4", type: "puzzle", heading: "マップの謎", optional: false,
-      image: "images/map_bird.webp", imageAlt: "重なった図形の謎",
+      image: "images/map_bird.webp?v=20261026", imageAlt: "重なった図形の謎",
       prompt: "",
       answers: ["トリ"], inputMode: "text", maxLength: 20,
       hints: [
@@ -838,7 +838,7 @@ const CONFIG = {
       optional: false,
       // 看板謎の改定最終版(元ファイル: images/看板謎改定最終webp.webp)。サイトにはゴリラ・トリ・うさぎの絵だけを出し、
       // 掲示板に貼った謎(直線・重なった図形・「みえだいへようこそ ごみは近くのゴミ箱へ」)と組み合わせて解く。答えは 215
-      image: "images/sign_board.webp?v=2",
+      image: "images/sign_board.webp?v=20261026",
       imageAlt: "ゴリラ・トリ・うさぎの絵",
       prompt: "掲示板の謎と組み合わせて解け。",
       answers: ["215"], inputMode: "numeric", maxLength: 3,
@@ -882,7 +882,7 @@ const CONFIG = {
       type: "puzzle",
       heading: "ファイルのパスワード",
       optional: false,
-      image: "images/file_password.webp",
+      image: "images/file_password.webp?v=20261026",
       imageAlt: "色分けされたマス目の謎",
       prompt: "", // 問題文なし(画像だけで出題)
       answers: ["あしどり"], inputMode: "text", maxLength: 10,
@@ -929,8 +929,8 @@ const CONFIG = {
       type: "puzzle",
       heading: "QRコードの謎",
       optional: true, // 解かなくても先へ進める
-      // 確定版(元ファイル: images/交番謎_最終.webp)。「じたくとりすものきろ」から「ろくもじのとり」を除くと「たすき」
-      image: "images/koban.webp?v=2",
+      // 確定版(元ファイル: images/謎_redesign.pptx の13枚目)。「じたくとりすものきろ」から「ろくもじのとり」を除くと「たすき」
+      image: "images/koban.webp?v=20261026",
       imageAlt: "文字列から言葉を抜き出す謎",
       prompt: "QRコードを読み込むと、この謎が表示された。\n画像の指示にしたがって、3文字の言葉を答えてください。",
       answers: ["たすき"], inputMode: "text", maxLength: 10,
@@ -983,8 +983,8 @@ const CONFIG = {
       // emphasis: 指示文だけを画面中央に大きく見せる(目的地の枠は出さない)
       emphasis: true,
       body: "ポスターに示された\n場所へ向かえ。",
-      // 指示文の下に出すポスターの謎(元ファイル: images/LION謎問題.pdf を画像化。青い枠の色はそのまま)
-      image: "images/poster2.png",
+      // 指示文の下に出すポスターの謎(元ファイル: images/謎_redesign.pptx の16枚目を画像化)
+      image: "images/poster2.webp?v=20261026",
       imageAlt: "ポスターの謎(ポスターの文字を読め)",
       subText: "到着したら「到着」を押してください。",
       destination: "ポスターに示された場所",
