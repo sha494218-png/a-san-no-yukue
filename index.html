@@ -31,8 +31,8 @@
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 @font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
-@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2") format("woff2");unicode-range: U+4e86, U+5c4b;}
-@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2") format("woff2");unicode-range: U+4e86, U+5c4b;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=2") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5973, U+5c4b, U+5f7c, U+635c, U+67c4, U+67fb, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=2") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5973, U+5c4b, U+5f7c, U+635c, U+67c4, U+67fb, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb;}
 
 /* ==========================================================
    デザイントークン
@@ -195,6 +195,10 @@ input{font-family:inherit;}
 .chat-bubble-me{background:var(--ink);color:var(--text-light);border-bottom-right-radius:2px;}
 .chat-messages-compact .chat-bubble{font-size:13px;padding:8px 12px;}
 .chat-messages-compact .chat-avatar{width:24px;height:24px;font-size:10px;}
+/* 依頼人以外の話し手(警察官など)。アイコンはハンコの赤、名前は文字で出す */
+.chat-avatar-police{background:var(--stamp);}
+.chat-name-text{font-family:var(--mincho);font-size:12px;font-weight:700;color:var(--ink-2);margin:0 0 4px 2px;}
+.chat-messages-compact .chat-name-text{font-size:10px;}
 
 /* ---------- 謎(パズル)カード = 1枚の資料 ---------- */
 .puzzle-card{
@@ -652,6 +656,10 @@ const CONFIG = {
   clientNameImage: "images/name_koiwa.png?v=3", // 画像を差し替えたら ?v= の数字を上げる(スマホに残った古い画像を使わせないため)
   // 本文中で {{名前}} と書くと、毛筆の名前画像で表示される(衡山毛筆フォントで書き出したもの)
   nameImages: { "流川透太": "images/name_rukawa.png?v=1" },
+  // 依頼人・自分以外にトークに出てくる人(messages の from にこのキーを書く)
+  chatSpeakers: {
+    police: { avatar: "警", name: "出張交番の警察官" },
+  },
 
   // 分岐の合言葉は廃止(真相の場所は参加者が現地で読み取り、最後の「小岩さんに伝える場所」で判定する)
   branchCodes: {},
@@ -1023,20 +1031,28 @@ const CONFIG = {
     // ============================================================
     // エンディング → 解説場所(エピローグ)の案内
     // ============================================================
+    // 交番・警察を伝えた(クリア): 警察官から真相の説明とお礼のトーク → 任意の解説・後日談の部屋へ案内する
+    // 小岩香苗(こいわかなえ)は、指名手配書の河合奈恵子(かわいなえこ)の名前を並べ替えた偽名
     {
       id: "ending_true",
-      type: "ending",
-      variant: "true",
-      badge: "CLEAR",
-      heading: "真相へ",
-      body: [
-        "あなたが伝えた場所——交番に、小岩さんは姿を現した。",
-        "そこで待っていたのは、流川さんではなく警察だった。",
-        "依頼人の小岩さんこそが、流川さんの日記にあった「ストーカー」だったのだ。",
-        "【要確定：クリアの本文】",
+      type: "chat",
+      heading: "出張交番からの連絡",
+      messages: [
+        { from: "system", text: "小岩さんに場所を伝えた" },
+        { from: "system", text: "しばらくして、出張交番から連絡が来た" },
+        { from: "police", text: "探偵さん、出張交番の者です。捜査へのご協力、ありがとうございました。" },
+        { from: "police", text: "あなたが伝えてくれたとおり、「小岩香苗」と名乗る女性が交番に現れました。その場で身柄を確保しています。" },
+        { from: "police", text: "「小岩香苗」は偽名でした。名前を並べ替えると「かわい なえこ」。本名は河合奈恵子。脅迫と窃盗の疑いで指名手配されていた人物です。" },
+        { from: "police", text: "そして、流川さんの日記に書かれていたストーカーも、彼女でした。" },
+        { from: "police", text: "流川さんを探していたのは、心配していたからではありません。身を隠した流川さんを見つけ出すために、探偵さんに依頼したのです。" },
+        { from: "police", text: "あなたが彼女の言葉をうのみにせず、真相にたどり着いてくれたおかげで、流川さんを守ることができました。本当にありがとうございました。" },
+        { from: "system", text: "GAME CLEAR　事件は解決した" },
+        { from: "police", text: "もしよろしければ、事件のくわしい解説と、少しだけその後のお話をさせてください。" },
+        { from: "instruction", label: "ご案内(任意)", text: "解説と後日談の部屋\n【要確定：部屋番号】" }, // 部屋番号は決まり次第ここに書く
+        { from: "system", text: "解説・後日談への参加は自由です" },
       ],
-      epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
-      next: null,
+      destination: null,
+      next: null, // 最後の画面なので「次へ」は出さない
     },
     // 交番・警察以外を伝えた(ポスターをLIONと読んだ人など)ときは、小岩さんのお礼のトークで終わり、そのまま解説の部屋へ案内する
     {
@@ -1391,6 +1407,17 @@ const CONFIG = {
     }
     if (m.from === "system") {
       return el("div", { class: "chat-system-note" }, withClientName(m.text));
+    }
+    // 依頼人以外の話し手(CONFIG.chatSpeakers に登録。警察官など)は、左側に名前を文字で出す
+    const speaker = CONFIG.chatSpeakers && CONFIG.chatSpeakers[m.from];
+    if (speaker) {
+      return el("div", { class: "chat-row chat-row-client" }, [
+        el("div", { class: "chat-avatar chat-avatar-" + m.from }, [speaker.avatar]),
+        el("div", { class: "chat-col" }, [
+          showName === false ? null : el("div", { class: "chat-name-text" }, [speaker.name]),
+          el("div", { class: "chat-bubble chat-bubble-client" }, withClientName(m.text)),
+        ]),
+      ]);
     }
     const isMe = m.from === "me";
     const bubble = el("div", { class: "chat-bubble " + (isMe ? "chat-bubble-me" : "chat-bubble-client") + (m.font === "meiryo" ? " font-meiryo" : "") }, withClientName(m.text));
