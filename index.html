@@ -484,7 +484,9 @@ body::before{display:none;}
 .diary-box{background-image:repeating-linear-gradient(to left, transparent, transparent 31px, var(--line-soft) 31px, var(--line-soft) 32px);box-shadow:inset 0 0 22px rgba(105,62,18,0.28), 0 4px 14px rgba(50,28,6,0.22);}
 /* 謎の画像は紙に刷られたように(白地が紙の色になる) */
 /* 謎の画像は色そのものが手がかりになる(白いマス=「しろ」など)ので、乗算せず元の色のまま白地に置く */
-.puzzle-image-thumb{mix-blend-mode:normal;background:#fff;}
+/* 謎の画像は白地を紙の色になじませる(乗算)。色が手がかりになる謎(keep-colors)だけは元の色のまま白地に置く */
+.puzzle-image-thumb,.review-img{mix-blend-mode:multiply;background:transparent;}
+.puzzle-image-thumb.keep-colors,.review-img.keep-colors{mix-blend-mode:normal;background:#fff;}
 .hub-card .hub-thumb,.clue-item img{mix-blend-mode:multiply;background:transparent;}
 .puzzle-image-thumb{border-color:var(--line-soft);}
 /* ハンコ・赤い刷り文字のかすれ */
@@ -539,7 +541,7 @@ body::before{display:none;}
 .review-title{font-weight:800;font-size:14px;}
 .review-answer{flex-shrink:0;font-size:12px;font-weight:700;color:var(--stamp);}
 .review-images{display:flex;flex-direction:column;gap:8px;}
-.review-img{display:block;width:100%;background:#fff;border:1px solid var(--line-soft);cursor:zoom-in;}
+.review-img{display:block;width:100%;border:1px solid var(--line-soft);cursor:zoom-in;}
 /* 読み仮名(初めて出てくる人物) */
 ruby.name-ruby rt{font-size:0.55em;font-weight:500;letter-spacing:0.05em;color:var(--muted);}
 .chat-bubble ruby.name-ruby{ruby-position:over;}
@@ -883,6 +885,7 @@ const CONFIG = {
       heading: "ファイルのパスワード",
       optional: false,
       image: "images/file_password.webp?v=20261026",
+      keepImageColors: true, // 白いマスが「しろ」を表すので、背景を紙の色になじませない
       imageAlt: "色分けされたマス目の謎",
       prompt: "", // 問題文なし(画像だけで出題)
       answers: ["あしどり"], inputMode: "text", maxLength: 10,
@@ -1429,9 +1432,10 @@ const CONFIG = {
     $app.appendChild(wrap);
   }
 
-  function renderImageBlock(src, alt) {
+  // keepColors: 色そのものが手がかりになる謎(白いマス=「しろ」のファイルの謎など)は、紙の色になじませず元の色のまま出す
+  function renderImageBlock(src, alt, keepColors) {
     if (!src) return null;
-    const img = el("img", { class: "puzzle-image-thumb", src, alt: alt || "", onclick: () => openLightbox(src, alt) });
+    const img = el("img", { class: "puzzle-image-thumb" + (keepColors ? " keep-colors" : ""), src, alt: alt || "", onclick: () => openLightbox(src, alt) });
     img.addEventListener("error", () => {
       img.replaceWith(el("div", { class: "puzzle-image-thumb", style: "display:flex;align-items:center;justify-content:center;color:#a08;font-size:12px;padding:30px 10px;" }, [
         "(画像未設置: " + src + ")",
@@ -1450,7 +1454,7 @@ const CONFIG = {
     const list = s.images && s.images.length ? s.images : s.image ? [{ src: s.image, alt: s.imageAlt }] : [];
     if (!list.length) return null;
     const frag = document.createDocumentFragment();
-    list.forEach((im) => frag.appendChild(renderImageBlock(im.src, im.alt)));
+    list.forEach((im) => frag.appendChild(renderImageBlock(im.src, im.alt, s.keepImageColors)));
     return frag;
   }
 
@@ -2398,7 +2402,7 @@ const CONFIG = {
             isPuzzle && s.answers && s.answers.length ? el("span", { class: "review-answer" }, ["答え：" + s.answers[0]]) : null,
           ]),
           el("div", { class: "review-images" }, imgs.map((im) =>
-            el("img", { class: "review-img", src: im.src, alt: im.alt || s.heading, loading: "lazy", onclick: () => openLightbox(im.src, im.alt || s.heading) })
+            el("img", { class: "review-img" + (s.keepImageColors ? " keep-colors" : ""), src: im.src, alt: im.alt || s.heading, loading: "lazy", onclick: () => openLightbox(im.src, im.alt || s.heading) })
           )),
         ]));
       });
