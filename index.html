@@ -31,6 +31,8 @@
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 @font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2") format("woff2");unicode-range: U+4e86, U+5c4b;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2") format("woff2");unicode-range: U+4e86, U+5c4b;}
 
 /* ==========================================================
    デザイントークン
@@ -1036,19 +1038,22 @@ const CONFIG = {
       epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
       next: null,
     },
+    // 交番・警察以外を伝えた(ポスターをLIONと読んだ人など)ときは、小岩さんのお礼のトークで終わり、そのまま解説の部屋へ案内する
     {
       id: "ending_bad",
-      type: "ending",
-      variant: "bad",
-      badge: "BAD END",
-      heading: "届いてしまった居場所",
-      body: [
-        "あなたが伝えた場所へ、小岩さんは向かっていった。",
-        "……流川さんが本当に隠れたかった相手は、誰だったのだろうか。",
-        "【要確定：バッドエンドの本文】",
+      type: "chat",
+      heading: "小岩さんとのトーク",
+      messages: [
+        { from: "system", text: "小岩さんに場所を伝えた" },
+        { from: "client", text: "ありがとうございます！ そこに行けば、流川さんに会えるんですね。" },
+        { from: "client", text: "探偵さんに相談して、本当によかったです。" },
+        { from: "client", text: "これでやっと……流川さんに会えます。" },
+        { from: "system", text: "小岩さんとのトークが終了しました" },
+        { from: "instruction", text: "解説の部屋へ向かえ。\n【要確定：部屋番号】" }, // 部屋番号は決まり次第ここに書く
+        { from: "system", text: "部屋では、スタッフが事件の解説をします" },
       ],
-      epilogue: { label: "解説の場所", place: "【要確定：解説(エピローグ)の場所】", note: "この場所へ向かうと、警官役のスタッフが事件の解説をします。" },
-      next: null,
+      destination: null,
+      next: null, // 最後の画面なので「次へ」は出さない
     },
   ],
 };
@@ -1427,7 +1432,7 @@ const CONFIG = {
     const wrap = el("div", { class: "chat-wrap" }, [
       el("h2", null, [s.heading]),
       messages,
-      el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ"]),
+      s.next ? el("button", { class: "btn btn-block", onclick: () => goto(s.next) }, ["次へ"]) : null, // 最後のトーク(next: null)はボタンなし
     ]);
     $app.appendChild(wrap);
   }
