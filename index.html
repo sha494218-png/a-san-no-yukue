@@ -31,8 +31,8 @@
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 @font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
-@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=4") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+96e3;}
-@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=4") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+96e3;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=5") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+96e3;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=5") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+96e3;}
 
 /* ==========================================================
    デザイントークン
@@ -847,7 +847,9 @@ const CONFIG = {
       type: "chat",
       heading: "小岩さんとのトーク",
       messages: [
-        { from: "client", text: "そういえば、掲示板の謎を解くと出張交番にたどり着けるっていううわさがあります。" },
+        // 小岩さんが知っているのは「生物資源学部棟のどこか」まで。部屋(答えの210)は知らない
+        { from: "client", text: "そういえば、学祭の間だけ開いている出張交番が、生物資源学部棟のどこかにあるそうです。" },
+        { from: "client", text: "どの部屋かまではわからないんですが……掲示板の謎を解くとたどり着けるっていううわさがあります。" },
         { from: "me", text: "掲示板の謎、解いてみます。" },
       ],
       destination: "掲示板",
@@ -858,18 +860,18 @@ const CONFIG = {
       type: "puzzle",
       heading: "掲示板の謎",
       optional: false,
-      // 看板謎の改定最終版(元ファイル: images/看板謎改定最終webp.webp)。サイトにはゴリラ・トリ・うさぎの絵だけを出し、
-      // 掲示板に貼った謎(直線・重なった図形・「みえだいへようこそ ごみは近くのゴミ箱へ」)と組み合わせて解く。答えは 215
-      image: "images/sign_board.webp?v=20261026",
-      imageAlt: "ゴリラ・トリ・うさぎの絵",
+      // 看板謎の改定版(2026-10-27。元ファイル: ウェブ/images/看板謎改定_ほんとの最終.webp)。サイトにはゴリラ・ゴリラ・トリの絵だけを出し、
+      // 掲示板に貼った謎(ウェブ/images/看板謎_看板用.webp の3つの図形)と組み合わせて解く。答えは 210(生物資源学部棟の中の出張交番の場所)
+      image: "images/sign_board.webp?v=20261027",
+      imageAlt: "ゴリラ・ゴリラ・トリの絵",
       prompt: "掲示板の謎と組み合わせて解け。",
-      answers: ["215"], inputMode: "numeric", maxLength: 3,
+      answers: ["210"], inputMode: "numeric", maxLength: 3,
       hints: [
-        "ゴリラ・トリ・うさぎは、マップの謎の答え。それぞれの謎で使った仕掛けを、掲示板の謎にもう一度使ってみよう。",
-        "掲示板の左の直線はゴリラの謎(線を文字として読む)、真ん中の図形はトリの謎(重なりを分ける)、右の文はうさぎの謎(「うえき＝上・き」のように読み替える)と同じ考え方で数字にしよう。",
-        "答え：215",
+        "ゴリラとトリは、マップの謎の答え。それぞれの謎で使った仕掛けを、掲示板の同じ位置にある図形にもう一度使ってみよう。",
+        "掲示板の左と真ん中の図形はゴリラの謎(線を文字として読む)、右の図形はトリの謎(重なった文字を分ける)と同じ考え方で、1つずつ数字にしよう。",
+        "答え：210",
       ],
-      reward: { label: "出張交番の場所が判明", detail: "学祭の間だけ開かれている出張交番の場所がわかった。(この場所は小岩さんには伝えていない)", kind: "place" },
+      reward: { label: "出張交番の場所が判明", detail: "掲示板の謎の答えは「210」。生物資源学部棟のどこかにあるという出張交番の場所を示しているようだ。(この答えは小岩さんには伝えていない)", kind: "place" },
       destination: "掲示板【要確定：設置場所】",
       next: "move_koban",
     },
@@ -878,8 +880,8 @@ const CONFIG = {
       type: "move",
       icon: "🚓",
       heading: "移動 出張交番へ",
-      body: "出張交番へ移動してください。",
-      destination: "出張交番【要確定：設置場所】",
+      body: "生物資源学部棟の中の、掲示板の謎の答えが示す場所へ移動してください。",
+      destination: "生物資源学部棟の出張交番",
       buttonLabel: "交番に入れた(次へ)",
       next: "story_koban",
     },
