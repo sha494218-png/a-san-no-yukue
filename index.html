@@ -1158,6 +1158,7 @@ const CONFIG = {
       branchChoice: null, // 'NO17CODE' / 'LIONCODE' / 'pass'
       startedAt: null,
       finishedAt: null,
+      endSceneId: null, // 最後の場所を送信した後のエンディング。これがあると「戻る」で最終問題に戻れない
       solvedCount: 0,
       storyLog: [], // 通過した物語(story)シーンのidを順番に記録し、「物語を振り返る」で一覧表示する
     };
@@ -1245,6 +1246,13 @@ const CONFIG = {
     }
     const sceneId = e.state && e.state.sceneId;
     if (!sceneId || !sceneMap[sceneId]) return; // 合言葉ページ(#staff)のハッシュ由来のpopstateなどは無視
+    // 最後の場所を送信した後は、「戻る」で最終問題(やそれより前)に戻して答え直させない。
+    // 戻った分の履歴をエンディングで積み直し、画面はエンディングのまま動かさない(スタッフモードのジャンプは goto なので影響しない)
+    if (state.endSceneId && sceneId !== state.endSceneId) {
+      try { history.pushState({ sceneId: state.endSceneId }, "", location.pathname + location.search + location.hash); } catch (err) {}
+      if (state.sceneId !== state.endSceneId) goto(state.endSceneId);
+      return;
+    }
     state.sceneId = sceneId;
     persist();
     render();
@@ -2038,6 +2046,7 @@ const CONFIG = {
     const finish = (target) => {
       state.finishedAt = Date.now();
       state.finalAnswer = input.value;
+      state.endSceneId = target; // ここから先は「戻る」で最終問題に戻れない
       persist();
       goto(target);
     };
@@ -2705,6 +2714,7 @@ const CONFIG = {
             delete state.hintsOpened[pid];
             delete state.solved[pid + ":arrived"];
             delete state.wrongCount[pid];
+            if (scene(pid) && scene(pid).type === "final") state.endSceneId = null; // 最終問題をやり直せるよう「戻る」の制限も解く
           });
           persist();
           if (idsToReset.includes(state.sceneId)) render();
