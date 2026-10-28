@@ -557,6 +557,7 @@ ruby.name-ruby rt{font-size:0.55em;font-weight:500;letter-spacing:0.05em;color:v
 .diary-box.diary-box-preview{max-height:260px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,#000 70%,transparent);mask-image:linear-gradient(to bottom,#000 70%,transparent);}
 .clue-item .review-img{margin-top:8px;}
 .clue-item img.diary-alt-img{border:none;margin:0;cursor:inherit;}
+.clue-item img.inline-name{width:auto;border:none;margin:0 1px;cursor:inherit;} /* 名前画像は資料画像の全幅表示にしない */
 .clue-tap-note{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
 /* 日記を全画面で読む */
 #lightbox.text-reader{background:var(--bg);overflow-y:auto;touch-action:auto;-webkit-overflow-scrolling:touch;}
@@ -782,7 +783,7 @@ const CONFIG = {
         "「はんせい」「いご」「りか」、全部のひらがなを並べ替えると、ある1つの文になります。",
         "答え：りんご",
       ],
-      reward: { label: "「りんご」の場所：ミエダイ探偵の情報", detail: "地図の「りんご」の場所に、ミエダイ探偵についての情報が置いてある。現地で確認しよう。", kind: "person" },
+      reward: { label: "「りんご」の場所：ミエダイ探偵の情報(1)", detail: "地図の「りんご」の場所に、ミエダイ探偵についての情報が置いてある。現地で確認しよう。", kind: "person" },
       arrivalPlace: "地図の「りんご」の場所", arrivalCodes: ["たんてい"], // 現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -796,7 +797,7 @@ const CONFIG = {
         "「したみ」は「下・み」。「み」の真下にあるマスを、上から順に読んでみましょう。",
         "答え：うさぎ",
       ],
-      reward: { label: "「うさぎ」の場所：{{刈田|かるた}}の情報", detail: "地図の「うさぎ」の場所に、{{刈田|かるた}}という人物についての情報が置いてある。現地で確認しよう。", font: "meiryo", kind: "person" },
+      reward: { label: "「うさぎ」の場所：出張交番の情報", detail: "地図の「うさぎ」の場所に、出張交番についての情報が置いてある。現地で確認しよう。", kind: "doc" },
       arrivalPlace: "地図の「うさぎ」の場所", arrivalCodes: ["こうばん"], // 現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -810,7 +811,7 @@ const CONFIG = {
         "1つ目の図形の組は「エリ」と読めます。同じ考え方で2つ目を読んでみましょう。",
         "答え：ゴリラ",
       ],
-      reward: { label: "「ゴリラ」の場所：{{刈田|かるた}}の情報(2)", detail: "地図の「ゴリラ」の場所に、{{刈田|かるた}}についての2つ目の情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", font: "meiryo", kind: "person" },
+      reward: { label: "「ゴリラ」の場所：{{流川冬汰}}の情報", detail: "地図の「ゴリラ」の場所に、{{流川冬汰|るかわ とうた}}さんについての情報が置いてある。現地で確認しよう。\n近くには、かるたサークルのポスターも貼られているようだ。", kind: "person" },
       arrivalPlace: "地図の「ゴリラ」の場所", arrivalCodes: ["かるたとうわ"], // 現地に置くキーワード
       destination: null, next: "map_hub",
     },
@@ -824,7 +825,7 @@ const CONFIG = {
         "重なっているのを分けて考えると、カタカナ2文字になります。",
         "答え：トリ",
       ],
-      reward: { label: "「トリ」の場所：アナグラムの情報", detail: "地図の「トリ」の場所に、アナグラムについての情報が置いてある。現地で確認しよう。\nマップ裏の人物紹介の「穴あき」部分に使えそうだ。", kind: "doc" },
+      reward: { label: "「トリ」の場所：ミエダイ探偵の情報(2)", detail: "地図の「トリ」の場所に、ミエダイ探偵についての2つ目の情報が置いてある。現地で確認しよう。", kind: "person" },
       arrivalPlace: "地図の「トリ」の場所", arrivalCodes: ["めいし"], // 現地に置くキーワード
       destination: null, next: "map_hub",
     },
