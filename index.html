@@ -517,6 +517,10 @@ body::before{display:none;}
 .instruction-label{display:inline-block;font-size:11px;font-weight:800;letter-spacing:0.3em;color:var(--stamp);border-bottom:1.5px solid var(--stamp);padding:0 2px 2px;margin-bottom:10px;}
 .instruction-text{white-space:pre-line;font-family:var(--mincho);font-size:20px;font-weight:900;line-height:1.6;letter-spacing:0.05em;color:var(--ink);}
 .chat-messages .instruction{align-self:stretch;margin:6px 0;}
+/* 完全クリアの人だけに出すクリア時間(ハンコふう) */
+.clear-time{align-self:center;margin:8px 0 10px;padding:10px 26px 12px;border:2.5px solid var(--stamp);outline:1px solid var(--stamp);outline-offset:3px;color:var(--stamp);text-align:center;transform:rotate(-3deg);}
+.clear-time-label{font-family:var(--type);font-size:12px;font-weight:700;letter-spacing:0.3em;}
+.clear-time-value{font-family:var(--mincho);font-size:28px;font-weight:900;letter-spacing:0.04em;line-height:1.3;}
 /* 日記: 日付ごとの区切り */
 .diary-entry{margin-bottom:18px;}
 /* 原稿で書体が違う文字(明朝の中にだけ細いゴシックで混ぜる。目立たせすぎない) */
@@ -1067,6 +1071,7 @@ const CONFIG = {
         { from: "police", text: "流川さんを探していたのは、心配していたからではありません。身を隠した流川さんを見つけ出すために、探偵さんに依頼したのです。" },
         { from: "police", text: "あなたが彼女の言葉をうのみにせず、真相にたどり着いてくれたおかげで、流川さんを守ることができました。本当にありがとうございました。" },
         { from: "system", text: "GAME CLEAR　事件は解決した" },
+        { from: "clearTime" }, // 2026-10-30 追加。タイトルの「開始」から場所を送信するまでの時間を出す(完全クリアの人だけ)
         { from: "police", text: "もしよろしければ、事件のくわしい解説と、少しだけその後のお話をさせてください。" },
         { from: "instruction", label: "ご案内(任意)", text: "解説と後日談の部屋\n生物資源学部棟 201" }, // 2026-10-30 確定(出張交番と同じ部屋)
         { from: "system", text: "解説・後日談への参加は自由です" },
@@ -1435,6 +1440,13 @@ const CONFIG = {
     }
     if (m.from === "system") {
       return el("div", { class: "chat-system-note" }, withClientName(m.text));
+    }
+    if (m.from === "clearTime") {
+      const ms = state.startedAt && state.finishedAt ? state.finishedAt - state.startedAt : null;
+      return el("div", { class: "clear-time" }, [
+        el("div", { class: "clear-time-label" }, ["CLEAR TIME"]),
+        el("div", { class: "clear-time-value" }, [formatDuration(ms)]),
+      ]);
     }
     // 依頼人以外の話し手(CONFIG.chatSpeakers に登録。警察官など)は、左側に名前を文字で出す
     const speaker = CONFIG.chatSpeakers && CONFIG.chatSpeakers[m.from];
