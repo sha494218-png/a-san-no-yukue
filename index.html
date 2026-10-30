@@ -31,8 +31,8 @@
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 @font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
-@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=6") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
-@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=6") format("woff2");unicode-range: U+4e86, U+507d, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=7") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=7") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
 
 /* ==========================================================
    デザイントークン
@@ -731,7 +731,7 @@ const CONFIG = {
       ],
       reward: [
         { label: "依頼人の小岩さんと連絡が取れる", detail: "パソコンのロックが解除され、小岩さんとやり取りできるようになった。", kind: "person" },
-        { label: "学内マップを入手", detail: "小岩さんのパネルから学内マップを受け取った。マップの裏面には人物紹介が載っている。", kind: "map" },
+        { label: "学内マップを入手", detail: "215の事務所で、小岩さんから届いた学内マップを受け取った。マップの裏面には人物紹介が載っている。", kind: "map" },
       ],
       destination: null,
       next: "story_map_intro",
@@ -751,8 +751,8 @@ const CONFIG = {
         { from: "system", text: "パソコンのロックが解除された" },
         { from: "client", text: "開いたんですね！ 画面には何が映っていますか？" },
         { from: "me", text: "学内の地図が表示されています。" },
-        { from: "client", text: "その地図なら、わたしのパネルのところに置いてあります。受け取ってください。" },
-        { from: "system", text: "小岩さんのパネルから、学内マップを受け取った(裏面には人物紹介)" },
+        { from: "client", text: "その地図なら、215の事務所に送っておきました。受け取ってください。" },
+        { from: "system", text: "215の事務所で、小岩さんから届いた学内マップを受け取った(裏面には人物紹介)" },
         // 2026-10-30 追加(シナリオ/IMG_0589.webp の受付用マニュアル)
         { from: "client", text: "どうやら彼は、交番に何かを預けたそうなんです。" },
         { from: "client", text: "もしかすると、このマップは交番への道のりを示しているのかも……。" },
