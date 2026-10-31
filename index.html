@@ -31,8 +31,8 @@
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_6.woff2") format("woff2");unicode-range: U+58, U+5a, U+60, U+7e, U+2025, U+2191, U+2193, U+25a1, U+25c6-25c7, U+25cf, U+2605-2606, U+2713, U+3007, U+300e-300f, U+3041, U+3043, U+3045-3047, U+3049, U+3061-3062, U+306c, U+3072-307d, U+308e, U+3090-3091, U+3094-3096, U+3099-309a, U+30a5-30a6, U+30ab-30ae, U+30bb-30be, U+30c1-30c2, U+30c4-30c5, U+30cc, U+30e4, U+30e6, U+30e8, U+30ee-30f2, U+30f4-30f5, U+30f7-30fa, U+4e21, U+500d, U+57fa, U+5c64, U+5ea7, U+5f0f, U+5fc3, U+6613, U+671f, U+6a19, U+6a21, U+6e1b, U+7372, U+79d2, U+7c21, U+7cfb, U+8a08, U+8c61, U+8ddd, U+967a, U+ff03, U+ff05-ff06, U+ff08-ff09, U+ff0b-ff0e, U+ff11-ff19, U+ff1b, U+ff20, U+ff5e;}
 @font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
 @font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_7.woff2") format("woff2");unicode-range: U+5f35, U+6539, U+7d75;}
-@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=7") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
-@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=7") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
+@font-face{font-family:"Noto Sans JP";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/notosansjp_8.woff2?v=8") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6bce, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
+@font-face{font-family:"Noto Serif JP";font-style:normal;font-weight:200 900;font-display:swap;src:url("fonts/notoserifjp_8.woff2?v=8") format("woff2");unicode-range: U+4e86, U+507d, U+52d9, U+5354, U+5642, U+5973, U+5c4b, U+5e7b, U+5f7c, U+60f3, U+635c, U+67c4, U+67fb, U+68df, U+6bce, U+6e90, U+7591, U+76d7, U+7a83, U+8105, U+8a71, U+8feb, U+9053, U+96e3;}
 
 /* ==========================================================
    デザイントークン
@@ -890,6 +890,8 @@ const CONFIG = {
       icon: "🚓",
       heading: "移動 出張交番へ",
       body: "生物資源学部棟の中の、謎の答えが示す場所へ移動してください。",
+      // 2026-10-31 追加。解説の時間(12〜17時の毎時00〜10分・17:50〜18:00)は警察官役が解説に出るため、物語上は「巡回中」とする
+      notice: "出張交番は、12:00〜17:00 の毎時00〜10分と 17:50〜18:00 は巡回中のため対応できません。この時間に着いたら、少し待ってから訪ねてください。",
       destination: "生物資源学部棟の出張交番",
       buttonLabel: "交番に入れた(次へ)",
       next: "story_koban",
@@ -1074,6 +1076,7 @@ const CONFIG = {
         { from: "clearTime" }, // 2026-10-30 追加。タイトルの「開始」から場所を送信するまでの時間を出す(完全クリアの人だけ)
         { from: "police", text: "もしよろしければ、事件のくわしい解説と、少しだけその後のお話をさせてください。" },
         { from: "instruction", label: "ご案内(任意)", text: "解説と後日談の部屋\n生物資源学部棟 201" }, // 2026-10-30 確定(出張交番と同じ部屋)
+        { from: "system", text: "解説の時間：12:00〜17:00 の毎時00〜10分、17:50〜18:00" }, // 2026-10-31 追加
         { from: "system", text: "解説・後日談への参加は自由です" },
       ],
       destination: null,
@@ -1092,6 +1095,7 @@ const CONFIG = {
         { from: "system", text: "小岩さんとのトークが終了しました" },
         { from: "instruction", text: "解説の部屋へ向かえ。\n生物資源学部棟 201" }, // 2026-10-30 確定(出張交番と同じ部屋)
         { from: "system", text: "部屋では、スタッフが事件の解説をします" },
+        { from: "system", text: "解説の時間：12:00〜17:00 の毎時00〜10分、17:50〜18:00" }, // 2026-10-31 追加
       ],
       destination: null,
       next: null, // 最後の画面なので「次へ」は出さない
@@ -1954,6 +1958,7 @@ const CONFIG = {
       el("div", { class: "move-icon" }, [s.icon || "🚶"]),
       el("h2", null, [s.heading]),
       el("p", null, [s.body]),
+      s.notice ? el("div", { class: "notice-box" }, [s.notice]) : null,
       s.destination ? el("div", { class: "move-dest" }, [
         el("div", { class: "l" }, ["目的地"]),
         el("div", { class: "v" }, [s.destination]),
