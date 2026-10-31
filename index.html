@@ -2124,11 +2124,8 @@ const CONFIG = {
     // 関門の謎を解く前でも読み込める(ファイルの謎とQRコードの謎は並列)。
     // ただしゲームがまだその段階に来ていない(関門の画面を一度も開いていない)場合は進ませない
     const required = gateScene.qrGate.availableAfter || gateScene.id;
-    if (!state.visited || !state.visited[required]) {
-      pendingNotice = "このQRコードは、まだ使えません。";
-      render();
-      return;
-    }
+    // 2026-10-31 「このQRコードは、まだ使えません。」のお知らせは出さない(ゲームを始めたときに出てしまうため)。黙って今の画面のままにする
+    if (!state.visited || !state.visited[required]) return;
     state.solved[gateScene.id + ":qr"] = true;
     persist();
     goto(gateScene.qrGate.target);
